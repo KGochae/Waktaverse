@@ -15,11 +15,12 @@ html, body, [class*="css"] {
 section.main > div {max-width:90rem;
     padding-top: 5rem;
     padding-bottom: 5rem;
-        }
+}
 
 .css-1qg05tj.e1y5xkzn3{
     display: none;
 }
+
 
 
 div[data-testid="metric-container"] {

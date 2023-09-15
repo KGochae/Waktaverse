@@ -32,6 +32,7 @@ def data_diff (data):
     data = data[data['video_id'] != '#NAME?']
     # data = data[data['playlistId'] != 'PLWTycz4el4t7ZCxkGYyekoP1iBxmOM4zZ'] # all music 은 제외 'PLWTycz4el4t7ZCxkGYyekoP1iBxmOM4zZ   
     data.loc[data['playlist_title'].str.contains('우왁굳'),'playlist_title'] = '우왁굳(연공전/똥겜 etc)' 
+    data.loc[data['playlist_title'] == 'ALL : MUSIC (최신순)','playlist_title'] = 'ALL : MUSIC'
 
     # 전일 대비 조회수및 좋아요 컬럼
     data['prev_view_count'] = data.groupby(['playlist_title','video_id'])['view_count'].shift()
@@ -64,8 +65,6 @@ def data_diff (data):
     return data, playlist_titles, subscribe, subscribe_week
 
 
-
-
 def total_diff(merged_df,playlist_titles):
     # 재생목록별 조회수, 구독자
     total_diff = pd.DataFrame()    
@@ -77,7 +76,7 @@ def total_diff(merged_df,playlist_titles):
     total_diff.loc[total_diff['playlist_title'].str.contains('MIDDLE|GOMEM'),'playlist_title'] = 'WAKTAVERSE : GOMEM ' 
     total_diff.loc[total_diff['video_id'].isin(['JY-gJkMuJ94', 'fgSXAKsq-Vo']), 'playlist_title'] = 'ISEGYE IDOL : MUSIC'
 
-    total_diff = total_diff[total_diff['playlist_title'] != 'ALL : MUSIC (최신순)']
+    total_diff = total_diff[total_diff['playlist_title'] != 'ALL : MUSIC']
     total_diff = total_diff.drop_duplicates(subset=['down_at', 'video_id'])
 
 @st.cache_data
@@ -93,7 +92,7 @@ def hot_video(merged_df,playlist_titles, year, month):
     total_diff.loc[total_diff['playlist_title'].str.contains('MIDDLE|GOMEM'),'playlist_title'] = 'WAKTAVERSE : GOMEM ' 
     total_diff.loc[total_diff['video_id'].isin(['JY-gJkMuJ94', 'fgSXAKsq-Vo']), 'playlist_title'] = 'ISEGYE IDOL : MUSIC'
 
-    total_diff = total_diff[total_diff['playlist_title'] != 'ALL : MUSIC (최신순)']
+    total_diff = total_diff[total_diff['playlist_title'] != 'ALL : MUSIC']
     total_diff = total_diff.drop_duplicates(subset=['down_at', 'video_id'])
 
     hot_column = ['playlist_title','video_id', 'title','view_count_diff','like_count_diff','view_like_sum']
@@ -135,5 +134,6 @@ def hot_video(merged_df,playlist_titles, year, month):
     top3_music_month = monthly_hot_music.nlargest(3, 'view_like_sum')[hot_column]
 
     return total_diff, top3_videos,top3_music, top3_videos_week, top3_music_week, top3_videos_month, top3_music_month
+
 
 

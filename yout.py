@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import requests
 import pickle
+import isodate
 
 
 import warnings
@@ -242,7 +243,6 @@ def scroll(channel_Id):
           return video_list
 
 # 영상의 길이
-import isodate
 def video_duration(video_ids, api_key):
     data = []
     for video_id in video_ids:
@@ -524,7 +524,6 @@ def gomem_comment(df, col, year, month):
         df = df[(df['year'] == year) & (df['month'] == month)]
 
     all_tmp = [word for sublist in df[col] for word in sublist] # word = 리스트 속 ['단어들']
-
     gomem_word = {
         # "우왁굳" : ['왁굳','영택','오영택','우왁굳','왁굳형'],
         "뢴트게늄" : ['뢴트게늄','뢴트','초코푸딩'],
@@ -549,6 +548,46 @@ def gomem_comment(df, col, year, month):
         "이덕수" : ['덕수','이덕수','할배즈'],
     }
 
+    aka_word = {
+        "미미짱짱세용" : ['미미짱짱세용','세용'],
+        "닌닌" : ['닌닌'],
+        "젠투" : ['젠투','젠크리트'],
+        "수셈이" : ['셈이','수셈이'],
+        "아마최" : ['아마데우스최','아마최'],
+        "진희" : ['진희','지니'],
+        "수셈이": ['셈이','수셈이'],
+        "발렌타인" : ['발렌','발렌타인'],
+        "시리안": ['시리안'],
+        "길버트":['길버트'],
+        "빅토리":['빅토리'],
+        "설리반":['설리반']
+    }
+
+    # 통일된 단어들만 추출 (gomem_word에 있는 단어들만 포함)
+
+    # gomem_word와 aka_word에 속하는 단어들을 추출
+    unified_tmp_gomem = unify_tmp(all_tmp, gomem_word)
+    unified_tmp_gomem = [word for word in unified_tmp_gomem if word in gomem_word]
+    
+    unified_tmp_aka = unify_tmp(all_tmp, aka_word)
+    unified_tmp_aka = [word for word in unified_tmp_aka if word in aka_word]
+    
+    # 각각의 단어 리스트를 Counter로 변환하여 가장 많이 나오는 단어들을 추출
+    most_gomem = Counter(unified_tmp_gomem).most_common(5)
+    most_aka = Counter(unified_tmp_aka).most_common(5)
+
+    return most_gomem, most_aka
+
+
+# 월별 고멤 언급량
+def akadamey_comment(df, col, year, month):
+    if month == 'all':
+        df = df[df['year'] == year]
+    else:
+        df = df[(df['year'] == year) & (df['month'] == month)]
+
+    all_tmp = [word for sublist in df[col] for word in sublist] # word = 리스트 속 ['단어들']
+
     aka_word = {   
         "미미짱짱세용" : ['미미짱짱세용','세용'],
         "닌닌" : ['닌닌'],
@@ -565,13 +604,14 @@ def gomem_comment(df, col, year, month):
     }
     # 통일된 단어들만 추출 (gomem_word에 있는 단어들만 포함)
 
-    unified_tmp = unify_tmp(all_tmp, gomem_word)
-    unified_tmp = [word for word in unified_tmp if word in gomem_word]
+    unified_tmp = unify_tmp(all_tmp, aka_word)
+    unified_tmp = [word for word in unified_tmp if word in aka_word]
     
     unified_tmp = Counter(unified_tmp)
     most_gomem = unified_tmp.most_common(5)
 
     return most_gomem
+
 
 # 최종 실행함수
 
@@ -582,7 +622,8 @@ def monthly_gomem(df):
 
   # 각 월별 데이터 계산 및 저장
     for month in range(1, 10):
-        most_common_words = gomem_comment(df, 'tmp', 2023, month)
+        most_gomem, most_aka = gomem_comment(df, 'tmp', 2023, month)
+        most_common_words = most_gomem + most_aka
         month_data = [{'id': gomem_name, 'count': count} for gomem_name, count in most_common_words]
         gomem_chart[month] = month_data
 

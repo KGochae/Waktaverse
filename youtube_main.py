@@ -23,7 +23,7 @@ from PIL import Image, ImageDraw
 import ast  # 문자열을 파이썬 리스트로 변환하기 위한 모듈
 
 # text 처리
-from yout import get_comment, nivo_pie, wordCount, get_member_images, gomem_video, gomem_tmp, gomem_comment, monthly_gomem, benfit_cal
+from yout import get_comment, nivo_pie, wordCount, get_member_images, gomem_video, gomem_tmp, gomem_comment, akadamey_comment, monthly_gomem, benfit_cal
 from preprocess import data_diff,hot_video
 
 # 일부 css 적용
@@ -44,7 +44,6 @@ year = str(now.strftime('%Y'))
 min_date = datetime.date(now.year, 6, 20)
 max_date = datetime.date(now.year, now.month, now.day)
 befor_7 = datetime.date(now.year, now.month-1,now.day)
-
 
 
 # Create API client.
@@ -123,101 +122,103 @@ if not data.empty:
     total_diff, top3_videos,top3_music, top3_videos_week, top3_music_week, top3_videos_month, top3_music_month = hot_video(merged_df,playlist_titles, year, month)
     
 
-    # 재생목록별 조회수 option (일별)
-    d = st.date_input(
-        "date",
-        (befor_7, datetime.date(now.year, now.month, now.day)),
-        min_date, # 최소 날짜
-        max_date, # 최대 날짜
-        format="YYYY.MM.DD",
-    ) 
-    if len(d) >= 2: 
-        start_d = str(d[0])
-        end_d = str(d[1])
-    else:
-        start_d = str(d[0])
-        end_d = str(max_date)
-
-
-    playlist_diff = total_diff.groupby(['playlist_title', 'down_at']).agg({'view_count_diff': 'sum'}).reset_index()
-    date_mask = (playlist_diff['down_at'] >= start_d) & (playlist_diff['down_at'] <= end_d) # date로 지정된 값들만 
-    pli_day_diff = playlist_diff.loc[date_mask]
-    pli_day_diff['down_at'] = pd.to_datetime(playlist_diff['down_at']).dt.strftime('%m-%d')
-
-
-    # 재생목록별 조회수(주간)
-    copy_df = total_diff.groupby(['playlist_title', 'down_at']).agg({'view_count_diff': 'sum'}).reset_index() 
-    copy_df['down_at'] = pd.to_datetime(copy_df['down_at'], format='%Y-%m-%d') 
-    copy_df['week_start'] = copy_df['down_at'] - pd.to_timedelta(copy_df['down_at'].dt.dayofweek, unit='d')
-    copy_df.groupby(['playlist_title','week_start'])['view_count_diff'].sum().reset_index()    
-    pli_weekly_diff = copy_df.groupby(['playlist_title', 'week_start']).agg({'view_count_diff': 'sum'}).reset_index()
-    pli_weekly_diff['week_start'] = pd.to_datetime(pli_weekly_diff['week_start']).dt.strftime('%m-%d')
-
-
-    # 월간
-
-
-    # nivo 차트를 위한 데이터 가공
-    diff = []
-    for playlist_title, group in pli_day_diff.groupby('playlist_title'):
-        if len(group) > 0:
-            
-            playlist_title = group.iloc[0]['playlist_title']
-            view_count_diff = group.iloc[-1]['view_count_diff']
-
-            diff.append({
-                'id': playlist_title,
-                'value' : view_count_diff,
-                'data' : [{'x': down_at, 'y': view_count_diff} for down_at, view_count_diff in zip(group['down_at'], group['view_count_diff'])][1:],
-            })
-
-    # 구독 변화
-    subscribe_n = [
-        {
-            'id': 'subscribe',
-            'data': [
-                {'x': week_start, 'y': subscribe_diff}
-                for week_start, subscribe_diff in zip(subscribe_week['week_start'], subscribe_week['subscribe_diff'])
-            ]
-        }
-    ]
-
-    today_total = sum(item['value'] for item in diff) # 가장 최근 전체 조회수
-
-
-    weekly_diff = []
-    for playlist_title, group in pli_weekly_diff.groupby('playlist_title'):
-        if len(group) > 0:
-            
-            playlist_title = group.iloc[0]['playlist_title']
-
-            weekly_diff.append({
-                'id': playlist_title,
-                'data' : [{'x': week_start, 'y': view_count_diff} for week_start, view_count_diff in zip(group['week_start'], group['view_count_diff'])][1:],
-
-            })
-
-
-
 # -------------------------------------------------------- MAIN CONTENTS(재생목록, 구독자, hot_video) ------------------------------------------------------------- #
 
     with st.container():  ### 📊 재생목록 조회수 증가량
-        col1,col2,_ = st.columns([3,0.6,2])
+        col1,col2,_= st.columns([4,2,7])
         with col1:
                 st.markdown('''
-                    ### 📊 재생목록 조회수 증가량
+                    ### 📊 재생목록 조회수/ 구독자수 증가량
                     ''')
         with col2:
-                sort_option_count = st.selectbox('______' , ['일별','주간','월간'], key='sort_option_playlist')
+            # 재생목록별 조회수 option (일별)
+            d = st.date_input(
+                "date",
+                (befor_7, datetime.date(now.year, now.month, now.day)),
+                min_date, # 최소 날짜
+                max_date, # 최대 날짜
+                format="YYYY.MM.DD",
+            ) 
+            if len(d) >= 2: 
+                start_d = str(d[0])
+                end_d = str(d[1])
+            else:
+                start_d = str(d[0])
+                end_d = str(max_date)
 
-                if sort_option_count == '일별':
-                    playlist_view_count_data = diff
 
-                elif sort_option_count == '주간':
-                    playlist_view_count_data = weekly_diff
+            playlist_diff = total_diff.groupby(['playlist_title', 'down_at']).agg({'view_count_diff': 'sum'}).reset_index()
+            date_mask = (playlist_diff['down_at'] >= start_d) & (playlist_diff['down_at'] <= end_d) # date로 지정된 값들만 
+            pli_day_diff = playlist_diff.loc[date_mask]
+            pli_day_diff['down_at'] = pd.to_datetime(playlist_diff['down_at']).dt.strftime('%m-%d')
 
-                elif sort_option_count == '월간':
-                    playlist_view_count_data = weekly_diff
+
+            # 재생목록별 조회수(주간)
+            copy_df = total_diff.groupby(['playlist_title', 'down_at']).agg({'view_count_diff': 'sum'}).reset_index() 
+            copy_df['down_at'] = pd.to_datetime(copy_df['down_at'], format='%Y-%m-%d') 
+            copy_df['week_start'] = copy_df['down_at'] - pd.to_timedelta(copy_df['down_at'].dt.dayofweek, unit='d')
+            copy_df.groupby(['playlist_title','week_start'])['view_count_diff'].sum().reset_index()    
+            pli_weekly_diff = copy_df.groupby(['playlist_title', 'week_start']).agg({'view_count_diff': 'sum'}).reset_index()
+            pli_weekly_diff['week_start'] = pd.to_datetime(pli_weekly_diff['week_start']).dt.strftime('%m-%d')
+
+
+            # 월간
+
+
+            # nivo 차트를 위한 데이터 가공
+            diff = []
+            for playlist_title, group in pli_day_diff.groupby('playlist_title'):
+                if len(group) > 0:
+                    
+                    playlist_title = group.iloc[0]['playlist_title']
+                    view_count_diff = group.iloc[-1]['view_count_diff']
+
+                    diff.append({
+                        'id': playlist_title,
+                        'value' : view_count_diff,
+                        'data' : [{'x': down_at, 'y': view_count_diff} for down_at, view_count_diff in zip(group['down_at'], group['view_count_diff'])][1:],
+                    })
+
+            # 구독 변화
+            subscribe_n = [
+                {
+                    'id': 'subscribe',
+                    'data': [
+                        {'x': week_start, 'y': subscribe_diff}
+                        for week_start, subscribe_diff in zip(subscribe_week['week_start'], subscribe_week['subscribe_diff'])
+                    ]
+                }
+            ]
+
+            today_total = sum(item['value'] for item in diff) # 가장 최근 전체 조회수
+
+
+            weekly_diff = []
+            for playlist_title, group in pli_weekly_diff.groupby('playlist_title'):
+                if len(group) > 0:
+                    
+                    playlist_title = group.iloc[0]['playlist_title']
+
+                    weekly_diff.append({
+                        'id': playlist_title,
+                        'data' : [{'x': week_start, 'y': view_count_diff} for week_start, view_count_diff in zip(group['week_start'], group['view_count_diff'])][1:],
+
+                    })
+
+
+
+        # with col3:
+        #         sort_option_count = st.selectbox('______' , ['일별','주간','월간'], key='sort_option_playlist')
+
+        #         if sort_option_count == '일별':
+        #             playlist_view_count_data = diff
+
+        #         elif sort_option_count == '주간':
+        #             playlist_view_count_data = weekly_diff
+
+        #         elif sort_option_count == '월간':
+        #             playlist_view_count_data = weekly_diff
+
 
     with st.container(): ### 재생목록별 조회수 증가량
         # col1,col2 = st.columns([1.7,1])
@@ -236,7 +237,7 @@ if not data.empty:
                                                             
                                 mui.Box( # 재생목록별 전체 조회수 증가량
                                         nivo.Line(
-                                            data= playlist_view_count_data,
+                                            data= diff,
                                             margin={'top': 50, 'right': 15, 'bottom': 20, 'left': 55},
                                             xScale={'type': 'point',
                                                     },
@@ -310,8 +311,8 @@ if not data.empty:
                                         mui.Typography(
                                             "  View count diff ",
                                             variant="body2",
-                                            sx={"fontFamily":"Pretendard Variable",
-                                                "font-size": "18px",
+                                            sx={ # "fontFamily":"Pretendard Variable",
+                                                "font-size": "24px",
                                                 "pt":2} ,
                                         ),
 
@@ -319,7 +320,7 @@ if not data.empty:
                                             f"{round(today_total)}",
                                             variant="body2",
                                             sx={
-                                                "font-size": "28px",
+                                                "font-size": "32px",
                                                 "fontWeight":"bold",
                                                 "padding-top": 0
                                                 } ,
@@ -329,7 +330,7 @@ if not data.empty:
 
                                         nivo.Pie(
                                                 data=diff,
-                                                margin={"top": 20, "right": 20, "bottom": 100, "left": 20 },
+                                                margin={"top": 30, "right": 20, "bottom": 110, "left": 20 },
                                                 sortByValue=True,
                                                 innerRadius={0.5},
                                                 padAngle={2},
@@ -411,9 +412,10 @@ if not data.empty:
                                             
                                         ),
                                         mui.Divider(),
+
                                         nivo.Line(
                                             data =subscribe_n,
-                                            margin={'top': 80, 'right': 10, 'bottom': 120, 'left': 10},
+                                            margin={'top': 50, 'right': 10, 'bottom': 120, 'left': 10},
                                             xScale={'type': 'point'},
                                             yScale={
                                                 'type': 'linear',
@@ -1562,154 +1564,172 @@ if not data.empty:
 
             
         with st.container():
-            col1,col2 = st.columns([1,2])
+            col1,col2 = st.columns([1.2,2])
             with col1:
                 st.subheader('👀 2023 월별 HOT 고정멤버 TOP5 !!!')
+                with st.form(key="waktaverse_aka_comment"):
+                    c1,c2,c3,c4 = st.columns([1,1.5,1.8,1])       
 
-                c1,c2 = st.columns([0.5,2])       
-                with c1:
-                    month_option = st.selectbox('month',[9,8,7,6,5,4,3,2,1,'all'], key='gomem_month')
-                    most_gomem = gomem_comment(comment_data,'tmp', 2023, month_option)
-                    st.session_state.most_gomem = most_gomem
-                    # st.write(most_gomem)
-                with c2:
-                    if hasattr(st.session_state, 'most_gomem'):
-                        most_gomem = st.session_state.most_gomem
-                        gomem = [item[0] for item in most_gomem]
-
-                        gomem_option = st.selectbox('gomem',gomem,key='gomem_name')
-                        gomem_hot_video = gomem_video(comment_data,gomem_option)
+                    with c1:
+                        month_option = st.selectbox('month',[9,8,7,6,5,4,3,2,1,'all'], key='gomem_month')
+                        most_gomem, most_aka = gomem_comment(comment_data,'tmp', 2023, month_option)                    
                         
-                        gomem_img = get_member_images(most_gomem)
+                        st.session_state.most_gomem = most_gomem
+                        st.session_state.most_aka = most_aka
+
+                    with c2:
+                        if hasattr(st.session_state, 'most_gomem'):
+                            most_gomem = st.session_state.most_gomem
+                        if hasattr(st.session_state, 'most_aka'):
+                            most_aka = st.session_state.most_aka
+
+                        gomem_aka = st.selectbox('month',['고정멤버','아카데미'], key='gomem_aka')
+                        
+                        if gomem_aka == '고정멤버':
+                            gomem_aka = most_gomem
+                            gomem = [item[0] for item in gomem_aka]
+
+                        elif gomem_aka == '아카데미':
+                            gomem_aka = most_aka
+                            gomem = [item[0] for item in gomem_aka]
+
+                    with c3:                    
+                        gomem_option = st.selectbox('gomem', gomem, key='gomem_name')
+                        gomem_hot_video = gomem_video(comment_data, gomem_option)                    
+                        gomem_img = get_member_images(gomem_aka)
+                        
                         st.session_state.gomem_img = gomem_img
-                    
-                if hasattr(st.session_state, 'gomem_img'):
-                    gomem_img = st.session_state.gomem_img
-                    st.caption(f'{month_option}월 ":green[왁타버스(예능)]" 영상에서 가장 반응이 뜨거웠던 (언급이 많았던) 고멤입니다.')
- 
-                    try:
-                        for i, member in enumerate(most_gomem):
-                            name = member[0]
-                            img = gomem_img[name]
-                    
-                        if img:                       
-                            with st.container():
 
-                                c1,c2,c3,c4,c5 = st.columns([1,1,1,1,1]) 
-                                with c1:
-                                    # if menber_cnt > 0 :
-                                        st.image(gomem_img[most_gomem[0][0]], width=80)
-                                        st.metric('hide',f'🥇{most_gomem[0][0]}',f'{most_gomem[0][1]}')
+                    with c4:
+                        submit_search = st.form_submit_button("submit")
 
-                                with c2:
-                                    # if menber_cnt > 1 :
-                                        st.image(gomem_img[most_gomem[1][0]], width=80)
-                                        st.metric('hide',f'{most_gomem[1][0]}',f'{most_gomem[1][1]}')
-                                
-                                with c3:
-                                    # if menber_cnt > 2 :
-                                        st.image(gomem_img[most_gomem[2][0]], width=80)
-                                        st.metric('hide',f'{most_gomem[2][0]}',f'{most_gomem[2][1]}')
-                                
-                                with c4:
-                                    # if menber_cnt > 3 :
-                                        st.image(gomem_img[most_gomem[3][0]], width=80)
-                                        st.metric('hide',f'{most_gomem[3][0]}',f'{most_gomem[3][1]}')
-                                
-                                with c5:
-                                    # if menber_cnt > 4 :
-                                        st.image(gomem_img[most_gomem[4][0]], width=80)
-                                        st.metric('hide',f'{most_gomem[4][0]}',f'{most_gomem[4][1]}')
 
-                    except KeyError:
-                            st.write('error')
+                    if hasattr(st.session_state, 'gomem_img'):
+                        gomem_img = st.session_state.gomem_img
+                        st.caption(f'{month_option}월 ":green[왁타버스(예능)]" 영상에서 가장 반응이 뜨거웠던 (언급이 많았던) 멤버입니다.')
 
-                if hasattr(st.session_state, 'nivo_gomem'):
-                    nivo_gomem = st.session_state.nivo_gomem
-                    filter_data = [item for item in nivo_gomem if item['id'] in gomem_option]
+                        try:
+                            for i, member in enumerate(gomem_aka):
+                                name = member[0]
+                                img = gomem_img[name]
+                        
+                            if img:                       
+                                with st.container():
+                                    c1,c2,c3,c4,c5 = st.columns([1,1,1,1,1]) 
+                                    with c1:
+                                        if len(gomem) > 0 :
+                                            st.image(gomem_img[gomem_aka[0][0]], width=80)
+                                            st.metric('hide',f'🥇{gomem_aka[0][0]}',f'{gomem_aka[0][1]}')
 
-                with elements("gomem_nivo"):
-                    layout=[            
-                        dashboard.Item("item_1", 0, 0, 2, 1.2)
-                        ]
-                    with dashboard.Grid(layout):
+                                    with c2:
+                                        if len(gomem) > 1 :
+                                            st.image(gomem_img[gomem_aka[1][0]], width=80)
+                                            st.metric('hide',f'{gomem_aka[1][0]}',f'{gomem_aka[1][1]}')
+                                    
+                                    with c3:
+                                        if len(gomem) > 2 :
+                                            st.image(gomem_img[gomem_aka[2][0]], width=80)
+                                            st.metric('hide',f'{gomem_aka[2][0]}',f'{gomem_aka[2][1]}')
+                                    
+                                    with c4:
+                                        if len(gomem) > 3 :
+                                            st.image(gomem_img[gomem_aka[3][0]], width=80)
+                                            st.metric('hide',f'{gomem_aka[3][0]}',f'{gomem_aka[3][1]}')
+                                    
+                                    with c5:
+                                        if len(gomem) > 4 :
+                                            st.image(gomem_img[gomem_aka[4][0]], width=80)
+                                            st.metric('hide',f'{gomem_aka[4][0]}',f'{gomem_aka[4][1]}')
 
-                        mui.Box( # 재생목록별 전체 조회수 증가량
-                            children =[
-                                mui.Typography(f' (2023) {gomem_option} 월별 언급량',
-                                               variant="body2",
-                                               color="text.secondary",sx={"text-align":"left","font-size":"14px"}),
+                        except KeyError:
+                                st.write('error')
 
-                                nivo.Line(
-                                data= filter_data,
-                                margin={'top': 20, 'right': 30, 'bottom': 30, 'left': 30},
-                                xScale={'type': 'point',
-                                        },
+                    if hasattr(st.session_state, 'nivo_gomem'):
+                        nivo_gomem = st.session_state.nivo_gomem
+                        filter_data = [item for item in nivo_gomem if item['id'] in gomem_option]
 
-                                curve="cardinal",
-                                axisTop=None,
-                                axisRight=None,
-                                axisBottom=True,
+                    with elements("gomem_nivo"):
+                        layout=[            
+                            dashboard.Item("item_1", 0, 0, 5, 1.2)
+                            ]
+                        with dashboard.Grid(layout):
 
-                                # axisLeft={
-                                #     'tickSize': 4,
-                                #     'tickPadding': 10,
-                                #     'tickRotation': 0,
-                                #     'legend': '조회수',
-                                #     'legendOffset': -70,
-                                #     'legendPosition': 'middle'
-                                # },
-                                colors= {'scheme': 'accent'},
-                                enableGridX = False,
-                                enableGridY = False,
-                                enableArea = True,
-                                areaOpacity = 0.3,
-                                lineWidth=2,
-                                pointSize=5,
-                                pointColor='white',
-                                pointBorderWidth=0.5,
-                                pointBorderColor={'from': 'serieColor'},
-                                pointLabelYOffset=-12,
-                                useMesh=True,
-                                legends=[
-                                            {
-                                            'anchor': 'top-left',
-                                            'direction': 'column',
-                                            'justify': False,
-                                            # 'translateX': -30,
-                                            # 'translateY': -200,
-                                            'itemsSpacing': 0,
-                                            'itemDirection': 'left-to-right',
-                                            'itemWidth': 80,
-                                            'itemHeight': 15,
-                                            'itemOpacity': 0.75,
-                                            'symbolSize': 12,
-                                            'symbolShape': 'circle',
-                                            'symbolBorderColor': 'rgba(0, 0, 0, .5)',
-                                            'effects': [
-                                                    {
-                                                    'on': 'hover',
-                                                    'style': {
-                                                        'itemBackground': 'rgba(0, 0, 0, .03)',
-                                                        'itemOpacity': 1
+                            mui.Box( # 재생목록별 전체 조회수 증가량
+                                children =[
+                                    mui.Typography(f' (2023) {gomem_option} 월별 언급량',
+                                                variant="body2",
+                                                color="text.secondary",sx={"text-align":"left","font-size":"14px"}),
+
+                                    nivo.Line(
+                                    data= filter_data,
+                                    margin={'top': 20, 'right': 30, 'bottom': 30, 'left': 40},
+                                    xScale={'type': 'point',
+                                            },
+
+                                    curve="cardinal",
+                                    axisTop=None,
+                                    axisRight=None,
+                                    axisBottom=True,
+
+                                    # axisLeft={
+                                    #     'tickSize': 4,
+                                    #     'tickPadding': 10,
+                                    #     'tickRotation': 0,
+                                    #     'legend': '조회수',
+                                    #     'legendOffset': -70,
+                                    #     'legendPosition': 'middle'
+                                    # },
+                                    colors= {'scheme': 'accent'},
+                                    enableGridX = False,
+                                    enableGridY = False,
+                                    enableArea = True,
+                                    areaOpacity = 0.3,
+                                    lineWidth=2,
+                                    pointSize=5,
+                                    pointColor='white',
+                                    pointBorderWidth=0.5,
+                                    pointBorderColor={'from': 'serieColor'},
+                                    pointLabelYOffset=-12,
+                                    useMesh=True,
+                                    legends=[
+                                                {
+                                                'anchor': 'top-left',
+                                                'direction': 'column',
+                                                'justify': False,
+                                                # 'translateX': -30,
+                                                # 'translateY': -200,
+                                                'itemsSpacing': 0,
+                                                'itemDirection': 'left-to-right',
+                                                'itemWidth': 80,
+                                                'itemHeight': 15,
+                                                'itemOpacity': 0.75,
+                                                'symbolSize': 12,
+                                                'symbolShape': 'circle',
+                                                'symbolBorderColor': 'rgba(0, 0, 0, .5)',
+                                                'effects': [
+                                                        {
+                                                        'on': 'hover',
+                                                        'style': {
+                                                            'itemBackground': 'rgba(0, 0, 0, .03)',
+                                                            'itemOpacity': 1
+                                                            }
                                                         }
-                                                    }
-                                                ]
+                                                    ]
+                                                }
+                                            ],                            
+                                    theme={
+                                            # "background-color": "rgba(158, 60, 74, 0.2)",
+                                            "textColor": "white",
+                                            "tooltip": {
+                                                "container": {
+                                                    "background": "#3a3c4a",
+                                                    "color": "white",
+                                                }
                                             }
-                                        ],                            
-                                theme={
-                                        # "background-color": "rgba(158, 60, 74, 0.2)",
-                                        "textColor": "white",
-                                        "tooltip": {
-                                            "container": {
-                                                "background": "#3a3c4a",
-                                                "color": "white",
-                                            }
-                                        }
-                                    },
-                                animate= True)
-                                
-                                ] ,key="item_1")
+                                        },
+                                    animate= True)
+                                    
+                                    ] ,key="item_1")
 
 
 
