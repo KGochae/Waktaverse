@@ -4,15 +4,12 @@ import pandas as pd
 import time
 import datetime
 import numpy as np
-
-# 프로그래스 bar
-# from time import sleep
-# from stqdm import stqdm
+import pandas_gbq
 
 from collections import Counter
 
 from googleapiclient.discovery import build
-from google.cloud import storage
+from google.cloud import storage, bigquery
 from google.oauth2 import service_account
 
 from streamlit_elements import dashboard
@@ -43,19 +40,20 @@ year = str(now.strftime('%Y'))
 
 min_date = datetime.date(now.year, 6, 20)
 max_date = datetime.date(now.year, now.month, now.day)
-befor_7 = datetime.date(now.year, now.month-1,now.day)
+befor_7 = datetime.date(now.year, now.month-2,now.day)
 
 
 # Create API client.
 credentials = service_account.Credentials.from_service_account_info(
     st.secrets["gcp_service_account"]
 )
+client = bigquery.Client(credentials=credentials)
 
 
 # ------------------------------GOOGLE CLOUD STORAGE------------------------------------------------ #
 
 # credentials_file = 'C:\scraping\my-project-72981-c4ea0ddcafb9.json'
-main_bucket = 'waktaverse'
+main_bucket = 'waktaverse_test'
 comment_bucket = 'waktaverse_comment'
 
 # conn = st.experimental_connection('gcs', type=FilesConnection)
@@ -84,7 +82,7 @@ def load_maindata():
 def load_comment():
     client = storage.Client(credentials=credentials)
     bucket = client.bucket(comment_bucket)
-    blob = bucket.blob('gomem_tmp_20230910.csv')
+    blob = bucket.blob('gomem_tmp_20230926.csv')
 
     csv_data = blob.download_as_string()
     df = pd.read_csv(io.StringIO(csv_data.decode('utf-8')))
@@ -96,9 +94,10 @@ def load_comment():
     # df['year'] = df['date'].dt.year
     # df['month'] = df['date'].dt.month
 
-    df['tmp'] = df['tmp'].apply(ast.literal_eval) # 토큰화된 값들 이 [] 안에있는데, csv 로 불러오면 문자열로 바뀌어버린다. 리스트로 변환해야함
+    df['tmp'] = df['tmp'].apply(ast.literal_eval) # 토큰화된 값들 이 [] 안에있는데, csv 로 불러오면 '[' , ']' 또한 문자열로 바뀌어버린다(?). 리스트로 변환해야함
 
     return df
+
 
 @st.cache_data
 def load_data():
@@ -110,18 +109,14 @@ data, comment_data = load_data()
 # -------------------------------------------------------------------------------------------------- #
 
 
-st.divider()
-
-
 # CSV 파일 업로드
 uploaded_file = st.sidebar.file_uploader('왁타버스 수익계산용 csv', type=['csv'])
 
 if not data.empty:
     # 일부 전처리
-    merged_df, playlist_titles, subscribe, subscribe_week = data_diff(data) 
+    merged_df, playlist_titles, subscribe, subscribe_week = data_diff(data)
     total_diff, top3_videos,top3_music, top3_videos_week, top3_music_week, top3_videos_month, top3_music_month = hot_video(merged_df,playlist_titles, year, month)
     
-
 # -------------------------------------------------------- MAIN CONTENTS(재생목록, 구독자, hot_video) ------------------------------------------------------------- #
 
     with st.container():  ### 📊 재생목록 조회수 증가량
@@ -161,7 +156,7 @@ if not data.empty:
             pli_weekly_diff = copy_df.groupby(['playlist_title', 'week_start']).agg({'view_count_diff': 'sum'}).reset_index()
             pli_weekly_diff['week_start'] = pd.to_datetime(pli_weekly_diff['week_start']).dt.strftime('%m-%d')
 
-
+            
             # 월간
 
 
@@ -959,13 +954,14 @@ if not data.empty:
                         submit_search = st.form_submit_button(label="Submit")
 
                     if submit_search:
-                        comment_df = get_comment(videoId)
-                        pos_nega = nivo_pie(comment_df)               
-                        most_common_words = wordCount(comment_df)
+                        with st.spinner('댓글수집중..'):
+                            comment_df = get_comment(videoId)
+                            pos_nega = nivo_pie(comment_df)               
+                            most_common_words = wordCount(comment_df)
 
-                        st.session_state.comment_df = comment_df 
-                        st.session_state.pos_nega = pos_nega
-                        st.session_state.most_common_words = most_common_words
+                            st.session_state.comment_df = comment_df 
+                            st.session_state.pos_nega = pos_nega
+                            st.session_state.most_common_words = most_common_words
 
                     if hasattr(st.session_state, 'comment_df'):
                         comment_df = st.session_state.comment_df
@@ -1317,8 +1313,9 @@ if not data.empty:
                         #### 풀영상 길이에도 불구하고 ..
                         "{static_enter['title'].iloc[0]}", "{static_enter['title'].iloc[1]}", "{static_enter['title'].iloc[2]}"
                         * 게시된지 1년 이상이 지났지만 상위권 
-                        * :green[합방, 같이보기, 반응] 타입의 영상이 꾸준히 사랑받고 있습니다.
-                        * 당연하지만 이세돌, 고멤이 많이 모일수록 시너지가 큽니다.                        
+                        * 대표적으로 :green[합방, 같이보기, 반응] 타입의 영상이 꾸준히 사랑받고 있습니다.
+                        * 이세계아이돌 3집 신곡 "KIDDING"의 대성공으로 안무영상이 큰 관심을 받고 있습니다. 
+                        * 이세돌, 고멤이 많이 모일수록 시너지가 큽니다.                        
                         ''')  
                 
                 static_enter['day'] = (today - static_enter['publishedAt'] ).dt.days
@@ -1374,14 +1371,12 @@ if not data.empty:
 
                 st.markdown(f'''
                         ##### {static_music['title'].iloc[0]}
-                        * 왁타버스 커버곡 중, 1위를 가장 많이한 영상입니다.
+                        * 왁타버스 cover/official곡 중, 1위를 가장 많이한 영상입니다.
                         * 영상이 게시된지 :green[{static_music['day'].iloc[0]}]일 동안 :green[{static_music['rank_in_cnt'].iloc[0]}]번 1위 (일별기준)
                         ''')  
                 
                 st.divider()
                 st.dataframe(static_music[['title','day','rank_in_cnt','mean_view']])
-
-
 
 # --------------------------------------------------------------예상 수익 계산 ----------------------------------------------------------------------------------------- #
 
@@ -1429,13 +1424,18 @@ if not data.empty:
             df = df[~df['playlist_title'].str.contains('MUSIC')]
             df = df[df['channel'] == 'waktaverse']
 
+              
             df.loc[df['playlist_title'].str.contains('YOUTUBE|이세여고|OFFICIAL'), 'playlist_title'] = 'ISEGYE IDOL : 예능' # 이세돌 카테고리 통합
-            df.loc[df['playlist_title'].str.contains('WAKTAVERSE'), 'playlist_title'] = 'WAKTAVERSE : 예능'
+            df.loc[df['playlist_title'].str.contains('GOMEM|MIDDLE'), 'playlist_title'] = 'WAKTAVERSE : 예능'
 
+            st.write(df)
+
+            # df = df[df['playlist_title'].isin(['ISEGYE IDOL : 예능','WAKTAVERSE : 예능','shorts'])]
 
             group_1 = df[df['seconds'] < 600].reset_index() # 15분 미만
             group_2 = df[df['seconds'] >= 600].reset_index() # 15분 이상
             group_3 = df[df['seconds'] >= 1800].reset_index() # 30분 이상
+            group_4 = df[df['seconds'] > 0 ].reset_index()
 
             group_wakta = df[df['playlist_title'].str.contains('WAKTA')].reset_index()
             group_idol = df[df['playlist_title'].str.contains('IDOL')].reset_index()
@@ -1455,8 +1455,8 @@ if not data.empty:
                     df = group_2[group_2['year'] == year_option]
                 elif  option == '30분 이상':
                     df = group_3[group_2['year'] == year_option]
-                else :
-                    df = df
+                elif year_option == 'all':
+                    df = group_4
 
             
                 # df = df[df['year'] == year_option]  # 년도에 따라 필터링
@@ -1471,27 +1471,35 @@ if not data.empty:
                     'title': 'count'
                 }).round(0).reset_index()
 
-                st.markdown('''##### 영상길이별 평균 수익 ''')
+                st.markdown('''##### 영상길이별 통계값(평균) ''')
                 st.dataframe(grouped)
+
                 # st.dataframe(df[['playlist_title','publishedAt','title','view_count','like_count','seconds','ad_count','cost','benefit']])   
 
             with col2:
 
                 from scipy.stats import *
 
-                st.subheader('영상의 타이틀(고멤,이세돌)에 따라 평균 수익, 조회수, 좋아요, 댓글수에 차이가 있을까?')
+                # st.subheader('영상의 타이틀(고멤,이세돌)에 따라 평균 수익, 조회수, 좋아요, 댓글수에 차이가 있을까?')
 
+                option = st.selectbox('변수', ['view_count','reaction','benefit','cost'], key='t-test')                
 
-                option = st.selectbox('변수', ['view_count','like_count','comment_count','benefit','cost'], key='t-test')                
+                group_w = group_wakta[option]
+                group_i = group_idol[option]
 
-                group_wakta = group_wakta[option]
-                group_idol = group_idol[option]
+                st.subheader(f'{option}')
+
+                st.markdown('''##### 왜도''')
+                st.markdown(f''' 
+                            * 고정멤버:{round(skew(group_w),3)}
+                            * 이세돌:{round(skew(group_i),3)}
+                            ''')
+
 
                 # 등분산성
-                statistic_l, pvalue_l = levene(group_wakta, group_idol)
-                st.subheader(f'{option}')
+                statistic_l, pvalue_l = levene(group_w, group_i)
                 if pvalue_l < 0.05:
-                    statistic_m, pvalue_m = mannwhitneyu(group_wakta, group_idol)                    
+                    statistic_m, pvalue_m = mannwhitneyu(group_w, group_i)                    
                     st.markdown(f''' 
                                 ##### levene
                                 * statistic : {round(statistic_l,3)} , p-value: {round(pvalue_l,3)}
@@ -1501,7 +1509,7 @@ if not data.empty:
                         st.markdown(f'''
                                 ##### t-test
                                 * statistic : {round(statistic_m,3)} , p-value : {round(pvalue_m,3)}
-                                * t-test 결과 평균 {option} 의 차이가 통계적으로 유의미합니다.
+                                * mannwhitneyu 결과 평균 {option} 의 차이가 통계적으로 유의미합니다.
                                  ''')
                     else:
                         st.markdown(f'''mannwhitneyu 결과 두 그룹간 {option}은 통계적으로 큰 차이가 없습니다.
@@ -1510,7 +1518,7 @@ if not data.empty:
  
                 else :
                     # t-검정 실행
-                    statistic_t, pvalue_t = ttest_ind(group_wakta, group_idol)
+                    statistic_t, pvalue_t = ttest_ind(group_w, group_i)
                     st.markdown(f'''
                                 ##### levene
                                 * statistic : {round(statistic_l,3)} , p-value: {round(pvalue_l,3)}
@@ -1568,7 +1576,7 @@ if not data.empty:
             with col1:
                 st.subheader('👀 2023 월별 HOT 고정멤버 TOP5 !!!')
                 with st.form(key="waktaverse_aka_comment"):
-                    c1,c2,c3,c4 = st.columns([1,1.5,1.8,1])       
+                    c1,c2,c3 = st.columns([1,2,1])       
 
                     with c1:
                         month_option = st.selectbox('month',[9,8,7,6,5,4,3,2,1,'all'], key='gomem_month')
@@ -1594,19 +1602,24 @@ if not data.empty:
                             gomem = [item[0] for item in gomem_aka]
 
                     with c3:                    
-                        gomem_option = st.selectbox('gomem', gomem, key='gomem_name')
-                        gomem_hot_video = gomem_video(comment_data, gomem_option)                    
-                        gomem_img = get_member_images(gomem_aka)
-                        
-                        st.session_state.gomem_img = gomem_img
-
-                    with c4:
+                        gomem_img = get_member_images(gomem_aka)                        
+                        st.session_state.gomem_img = gomem_img                        
                         submit_search = st.form_submit_button("submit")
+
 
 
                     if hasattr(st.session_state, 'gomem_img'):
                         gomem_img = st.session_state.gomem_img
-                        st.caption(f'{month_option}월 ":green[왁타버스(예능)]" 영상에서 가장 반응이 뜨거웠던 (언급이 많았던) 멤버입니다.')
+                        if month_option == 'all':
+                            caption = f'2023년 ":green[왁타버스(예능)]" 영상에서 가장 반응이 뜨거웠던 (언급이 많았던) 멤버입니다.'
+                        else:
+                            caption = f'{month_option}월 ":green[왁타버스(예능)]" 영상에서 가장 반응이 뜨거웠던 (언급이 많았던) 멤버입니다.'
+                            
+                        st.caption(caption)
+
+
+
+                        # st.caption(f'{month_option}월 ":green[왁타버스(예능)]" 영상에서 가장 반응이 뜨거웠던 (언급이 많았던) 멤버입니다.')
 
                         try:
                             for i, member in enumerate(gomem_aka):
@@ -1644,92 +1657,95 @@ if not data.empty:
                         except KeyError:
                                 st.write('error')
 
-                    if hasattr(st.session_state, 'nivo_gomem'):
-                        nivo_gomem = st.session_state.nivo_gomem
-                        filter_data = [item for item in nivo_gomem if item['id'] in gomem_option]
+                if hasattr(st.session_state, 'nivo_gomem'):
+                    nivo_gomem = st.session_state.nivo_gomem
+                    gomem_option = st.selectbox('gomem', gomem, key='gomem_name')
+                    gomem_hot_video = gomem_video(comment_data, gomem_option) 
 
-                    with elements("gomem_nivo"):
-                        layout=[            
-                            dashboard.Item("item_1", 0, 0, 5, 1.2)
-                            ]
-                        with dashboard.Grid(layout):
+                    filter_data = [item for item in nivo_gomem if item['id'] in gomem_option]
 
-                            mui.Box( # 재생목록별 전체 조회수 증가량
-                                children =[
-                                    mui.Typography(f' (2023) {gomem_option} 월별 언급량',
-                                                variant="body2",
-                                                color="text.secondary",sx={"text-align":"left","font-size":"14px"}),
+                with elements("gomem_nivo"):
+                    layout=[            
+                        dashboard.Item("item_1", 0, 0, 5, 1.5)
+                        ]
+                    with dashboard.Grid(layout):
 
-                                    nivo.Line(
-                                    data= filter_data,
-                                    margin={'top': 20, 'right': 30, 'bottom': 30, 'left': 40},
-                                    xScale={'type': 'point',
-                                            },
+                        mui.Box( # 재생목록별 전체 조회수 증가량
+                            children =[
+                                mui.Typography(f' (2023) {gomem_option} 월별 언급량',
+                                            variant="body2",
+                                            color="text.secondary",sx={"text-align":"left","font-size":"14px"}),
 
-                                    curve="cardinal",
-                                    axisTop=None,
-                                    axisRight=None,
-                                    axisBottom=True,
-
-                                    # axisLeft={
-                                    #     'tickSize': 4,
-                                    #     'tickPadding': 10,
-                                    #     'tickRotation': 0,
-                                    #     'legend': '조회수',
-                                    #     'legendOffset': -70,
-                                    #     'legendPosition': 'middle'
-                                    # },
-                                    colors= {'scheme': 'accent'},
-                                    enableGridX = False,
-                                    enableGridY = False,
-                                    enableArea = True,
-                                    areaOpacity = 0.3,
-                                    lineWidth=2,
-                                    pointSize=5,
-                                    pointColor='white',
-                                    pointBorderWidth=0.5,
-                                    pointBorderColor={'from': 'serieColor'},
-                                    pointLabelYOffset=-12,
-                                    useMesh=True,
-                                    legends=[
-                                                {
-                                                'anchor': 'top-left',
-                                                'direction': 'column',
-                                                'justify': False,
-                                                # 'translateX': -30,
-                                                # 'translateY': -200,
-                                                'itemsSpacing': 0,
-                                                'itemDirection': 'left-to-right',
-                                                'itemWidth': 80,
-                                                'itemHeight': 15,
-                                                'itemOpacity': 0.75,
-                                                'symbolSize': 12,
-                                                'symbolShape': 'circle',
-                                                'symbolBorderColor': 'rgba(0, 0, 0, .5)',
-                                                'effects': [
-                                                        {
-                                                        'on': 'hover',
-                                                        'style': {
-                                                            'itemBackground': 'rgba(0, 0, 0, .03)',
-                                                            'itemOpacity': 1
-                                                            }
-                                                        }
-                                                    ]
-                                                }
-                                            ],                            
-                                    theme={
-                                            # "background-color": "rgba(158, 60, 74, 0.2)",
-                                            "textColor": "white",
-                                            "tooltip": {
-                                                "container": {
-                                                    "background": "#3a3c4a",
-                                                    "color": "white",
-                                                }
-                                            }
+                                nivo.Line(
+                                data= filter_data,
+                                margin={'top': 20, 'right': 30, 'bottom': 30, 'left': 40},
+                                xScale={'type': 'point',
                                         },
-                                    animate= True)
-                                    
-                                    ] ,key="item_1")
+
+                                curve="cardinal",
+                                axisTop=None,
+                                axisRight=None,
+                                axisBottom=True,
+
+                                # axisLeft={
+                                #     'tickSize': 4,
+                                #     'tickPadding': 10,
+                                #     'tickRotation': 0,
+                                #     'legend': '조회수',
+                                #     'legendOffset': -70,
+                                #     'legendPosition': 'middle'
+                                # },
+                                colors= {'scheme': 'accent'},
+                                enableGridX = False,
+                                enableGridY = False,
+                                enableArea = True,
+                                areaOpacity = 0.3,
+                                lineWidth=2,
+                                pointSize=5,
+                                pointColor='white',
+                                pointBorderWidth=0.5,
+                                pointBorderColor={'from': 'serieColor'},
+                                pointLabelYOffset=-12,
+                                useMesh=True,
+                                legends=[
+                                            {
+                                            'anchor': 'top-left',
+                                            'direction': 'column',
+                                            'justify': False,
+                                            # 'translateX': -30,
+                                            # 'translateY': -200,
+                                            'itemsSpacing': 0,
+                                            'itemDirection': 'left-to-right',
+                                            'itemWidth': 80,
+                                            'itemHeight': 15,
+                                            'itemOpacity': 0.75,
+                                            'symbolSize': 12,
+                                            'symbolShape': 'circle',
+                                            'symbolBorderColor': 'rgba(0, 0, 0, .5)',
+                                            'effects': [
+                                                    {
+                                                    'on': 'hover',
+                                                    'style': {
+                                                        'itemBackground': 'rgba(0, 0, 0, .03)',
+                                                        'itemOpacity': 1
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ],                            
+                                theme={
+                                        # "background-color": "rgba(158, 60, 74, 0.2)",
+                                        "textColor": "white",
+                                        "tooltip": {
+                                            "container": {
+                                                "background": "#3a3c4a",
+                                                "color": "white",
+                                            }
+                                        }
+                                    },
+                                animate= True)
+                                
+                                ] ,key="item_1")
 
 
 
@@ -1737,40 +1753,111 @@ if not data.empty:
 
             with col2:
                 st.markdown(f''' 
-                            ### 해당 고멤의 영상을 더 보고 싶다면?
-                            *  고멤 :green[{gomem_option}]의 언급량이 많은 대표 영상 입니다!  ''' )
+                            ### {gomem_option} 영상 더보기
+                            *  :green[{gomem_option}]의 언급량이 많은 대표 영상 TOP5 입니다!  ''' )
+
                 with elements("gomem_hot_video"):
-                    layout=[
-                
-                        dashboard.Item(f"item_1", 0, 0, 1.5, 1, isDraggable=False, isResizable=False  ), #isDraggable=False, isResizable=True                    
-                        dashboard.Item(f"item_2", 1.5, 0, 1.5, 1, isDraggable=True, isResizable=False ),                    
-                        dashboard.Item(f"item_3", 3, 0, 1.5, 1, isDraggable=True, isResizable=False ),                    
-                        dashboard.Item(f"item_4", 4.5, 0, 1.5, 1, isDraggable=True, isResizable=False ),                    
+                        layout=[
+                    
+                            dashboard.Item(f"item_0", 0, 0, 2, 1.5, isDraggable=False, isResizable=False  ), #isDraggable=False, isResizable=True                    
+                            dashboard.Item(f"item_1", 2, 0, 2, 1.5, isDraggable=False, isResizable=False ),                    
+                            dashboard.Item(f"item_2", 4, 0, 2, 1.5, isDraggable=False, isResizable=False ),                    
+                            dashboard.Item(f"item_3", 0, 2, 2, 1.5, isDraggable=False, isResizable=False ),                    
+                            dashboard.Item(f"item_4", 2, 4, 2, 1.5, isDraggable=False, isResizable=False ),                    
 
-                        ]
-                    with dashboard.Grid(layout):
-                        if len(gomem_hot_video) > 0 :
-                            media.Player(url=f"https://youtu.be/{gomem_hot_video['video_id'].iloc[0]}"
-                                            ,controls=True, playing=True, volume = 0.2 , light=True, width='100%', height='100%',
-                                            key='item_1')                                                                                                                           
+                            ]
+                        with dashboard.Grid(layout):
+                            for i in range(5):
+                                mui.Card(
+                                        mui.CardContent( # 재생목록/링크
+                                            sx={'display':'flex',
+                                                'padding': '2px 0 0 0'
+                                                },
+                                            children=[
+                                                mui.Typography(
+                                                            f"{gomem_option} 추천 영상",
+                                                            component="div",
+                                                            sx={"font-size":"12px",
+                                                                "padding-left": 10,
+                                                                "padding-right": 10}                            
+                                                        ),
+                                                mui.Link(
+                                                    "🔗",
+                                                    href=f"https://www.youtube.com/watch?v={gomem_hot_video['video_id'].iloc[i]}",
+                                                    target="_blank",
+                                                    sx={"font-size": "12px",
+                                                        "font-weight": "bold"}
+                                                        )                                                                                       
+                                                    ]                            
+                                                ),
 
-                        if len(gomem_hot_video) > 1 :
-                            media.Player(url=f"https://youtu.be/{gomem_hot_video['video_id'].iloc[1]}"
-                                            ,controls=True, playing=True, volume = 0.2 , light=True, width='100%', height='100%',
-                                            key='item_2')                                                                                                                           
- 
-                        if len(gomem_hot_video) > 2 :
-                            media.Player(url=f"https://youtu.be/{gomem_hot_video['video_id'].iloc[2]}"
-                                            ,controls=True, playing=True, volume = 0.2 , light=True, width='100%', height='100%',
-                                            key='item_3')                                                                                                                           
- 
-                        if len(gomem_hot_video) > 3 :
-                            media.Player(url=f"https://youtu.be/{gomem_hot_video['video_id'].iloc[3]}"
-                                            ,controls=True, playing=True, volume = 0.2 , light=True, width='100%', height='100%',
-                                            key='item_4')                               
-                
+
+                                        mui.CardMedia( # 썸네일 이미지
+                                            sx={ "height": 150,
+                                                "backgroundImage": f"linear-gradient(rgba(0, 0, 0, 0), rgba(0,0,0,0.5)), url(https://i.ytimg.com/vi/{gomem_hot_video['video_id'].iloc[i]}/sddefault.jpg)",
+                                                # "mt": 0.5
+                                                },
+                                            ),
+
+                                        mui.CardContent( # 타이틀 조회수증가량
+                                            sx = hot_video_card_sx,
+                                            children=[
+                                                mui.Typography( # 타이틀
+                                                    f"{gomem_hot_video['title'].iloc[i]}",
+                                                    component="div",
+                                                    sx=title_sx                           
+                                                ),
+                                            
+                                                mui.Divider(orientation="vertical",sx={"border-width":"1px"}), # divider 추가
+                                            
+                                                mui.Box(
+                                                    mui.Typography(
+                                                        f"{int(gomem_hot_video['cnt'].iloc[i])}",
+                                                            variant='body2', 
+                                                        sx={
+                                                            "font-size" : "25px",
+                                                            "fontWeight":"bold",
+                                                            "text-align":"center",
+                                                            "height":"30px"
+                                                            },     
+                                                        ),   
+                                                    mui.Typography(
+                                                        "언급량",
+                                                            variant='body2', 
+                                                        sx={
+                                                            "font-size" : "10px",
+                                                            "fontWeight":"bold",
+                                                            "text-align":"center"
+                                                            },     
+                                                        ),    
+                                                    ),
+                                                ]
+                                            )                       
+                                                ,key=f'item_{i}',sx={"borderRadius": '23px'})
 
 
+                            # if len(gomem_hot_video) > 0 :
+                            #     media.Player(url=f"https://youtu.be/{gomem_hot_video['video_id'].iloc[0]}"
+                            #                     ,controls=True, playing=True, volume = 0.2 , light=True, width='100%', height='100%',
+                            #                     key='item_1')                                                                                                                           
+
+                            # if len(gomem_hot_video) > 1 :
+                            #     media.Player(url=f"https://youtu.be/{gomem_hot_video['video_id'].iloc[1]}"
+                            #                     ,controls=True, playing=True, volume = 0.2 , light=True, width='100%', height='100%',
+                            #                     key='item_2')                                                                                                                           
+    
+                            # if len(gomem_hot_video) > 2 :
+                            #     media.Player(url=f"https://youtu.be/{gomem_hot_video['video_id'].iloc[2]}"
+                            #                     ,controls=True, playing=True, volume = 0.2 , light=True, width='100%', height='100%',
+                            #                     key='item_3')                                                                                                                           
+    
+                            # if len(gomem_hot_video) > 3 :
+                            #     media.Player(url=f"https://youtu.be/{gomem_hot_video['video_id'].iloc[3]}"
+                            #                     ,controls=True, playing=True, volume = 0.2 , light=True, width='100%', height='100%',
+                            #                     key='item_4')                               
+                    
+                # st.divider()
+                    
 
             # if st.button('Download CSV'):                
             #     file_path = f'C:/scraping/csv_data/gomem_tmp_20230910.csv'
@@ -2168,96 +2255,3 @@ if not data.empty:
 
 else:
     st.write('NO DATA')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                        # nivo.Line(
-                        #     data= [diff_nivo_data[i]],
-                        #     margin={'top': 50, 'right': 100, 'bottom': 40, 'left': 100},
-                        #     xScale={'type': 'point'},
-                        #     yScale={
-                        #         'type': 'linear',
-                        #         'min': 0,
-                        #         'max': 'auto',
-                        #         'stacked': True,
-                        #         'reverse': False
-                        #     },
-                        #     yFormat=' >-.2s',
-                        #     # curve="catmullRom",
-                        #     axisTop=None,
-                        #     axisRight=None,
-                        #     axisBottom=
-                        #     {
-                        #         'tickCount': 5,
-                        #         'tickValues': None,  # X축 값들 사이에 구분선을 그리기 위해 설정
-                        #         'tickSize': 0,
-                        #         'tickPadding': 5,
-                        #         'tickRotation': 0,
-                        #         'legendOffset': 36,
-                        #         'legendPosition': 'middle',
-                        #     },
-                        #     axisLeft={
-                        #         'tickSize': 4,
-                        #         'tickPadding': 10,
-                        #         'tickRotation': 0,
-                        #         'legend': '조회수',
-                        #         'legendOffset': -70,
-                        #         'legendPosition': 'middle'
-                        #     },
-                        #     colors= {'scheme': 'accent'},
-                        #     enableGridX = False,
-                        #     enableGridY = False,
-                        #     lineWidth=5,
-                        #     pointSize=5,
-                        #     pointColor='white',
-                        #     pointBorderWidth=1,
-                        #     pointBorderColor={'from': 'serieColor'},
-                        #     pointLabelYOffset=-12,
-                        #     useMesh=True,
-                        
-                        #     theme={
-                        #             # "background": "#171717", # #262730 #100F0F
-                        #             "textColor": "white",
-                        #             "tooltip": {
-                        #                 "container": {
-                        #                     "background": "#3a3c4a",
-                        #                     "color": "white",
-                        #                 }
-                        #             }
-                        #         },
-                        #     animate= False
-
-                        # )
-
-
-# with elements("multiple_children"):
-
-#     mui.Button(
-#         mui.icon.ArrowDropUp)
-
-
-
-
-# with elements("hot_viddeo"):
-#     layout=[
-#            dashboard.Item("item_1", 0, 0, 2, 1.5, isDraggable=True, isResizable=False ),
-#     ]
