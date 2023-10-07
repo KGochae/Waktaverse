@@ -7,7 +7,6 @@ import requests
 import pickle
 import isodate
 
-
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -23,6 +22,8 @@ from soynlp.normalizer import *
 
 from collections import Counter
 from PIL import Image, ImageDraw
+import h2o
+h2o.init()
 
 
 # -------------------------------------------------------- yotube api v3 ------------------------------------------------------------- #
