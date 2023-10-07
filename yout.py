@@ -6,8 +6,6 @@ import requests
 import pickle
 import isodate
 import h2o
-h2o.init()
-
 import warnings
 warnings.filterwarnings("ignore")
 
