@@ -20,13 +20,9 @@ from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 from soynlp.normalizer import *
 
-from collections import Counter
 from dotenv import load_dotenv
 
 from PIL import Image, ImageDraw
-import h2o
-h2o.init()
-
 
 # -------------------------------------------------------- yotube api v3 ------------------------------------------------------------- #
 # api_key = os.getenv('api_key')
@@ -44,11 +40,6 @@ YOUTUBE_API_SERVICE_NAME = "youtube"
 YOUTUBE_API_VERSION = "v3"
 youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey=DEVELOPER_KEY)
 
-# ------------------------------------------------------------------------------------------------------------------------------------ #
-
-
-word_freq_counter = Counter()
-twi = Twitter()
 
 # -------------------------------------------------- youtubue api 와 관련된 def ------------------------------------------------------- #
 
