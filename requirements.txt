@@ -127,10 +127,10 @@ tangled-up-in-unicode==0.2.0
 tenacity==8.2.2
 tensorboard==2.13.0
 tensorboard-data-server==0.7.1
-tensorflow==2.13.0
-tensorflow-estimator==2.13.0
-tensorflow-intel==2.13.0
-tensorflow-io-gcs-filesystem==0.31.0
+tensorflow
+tensorflow-estimator
+tensorflow-intel
+tensorflow-io-gcs-filesystem
 termcolor==2.3.0
 threadpoolctl==3.1.0
 toml==0.10.2
