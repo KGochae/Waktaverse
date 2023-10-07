@@ -109,9 +109,7 @@ scipy==1.10.1
 seaborn==0.12.2
 six==1.16.0
 smmap==5.0.0
-soynlp==0.0.493
 st-card-component==0.0.10
-st-files-connection @ git+https://github.com/streamlit/files-connection@c65a9f0da856207086540baee3a36346bb39c0eb
 statsmodels==0.14.0
 stqdm==0.0.5
 streamlit==1.25.0
