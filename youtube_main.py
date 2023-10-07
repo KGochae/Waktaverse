@@ -961,14 +961,15 @@ if not data.empty:
                         submit_search = st.form_submit_button(label="Submit")
 
                     if submit_search:
-                        with st.spinner('댓글수집중..'):
-                            comment_df = get_comment(videoId)
-                            pos_nega = nivo_pie(comment_df)               
-                            most_common_words = wordCount(comment_df)
+                        st.write('sorry not yet..🥹')
+                        # with st.spinner('댓글수집중..'):
+                        #     comment_df = get_comment(videoId)
+                        #     pos_nega = nivo_pie(comment_df)               
+                        #     most_common_words = wordCount(comment_df)
 
-                            st.session_state.comment_df = comment_df 
-                            st.session_state.pos_nega = pos_nega
-                            st.session_state.most_common_words = most_common_words
+                        #     st.session_state.comment_df = comment_df 
+                        #     st.session_state.pos_nega = pos_nega
+                        #     st.session_state.most_common_words = most_common_words
 
                     if hasattr(st.session_state, 'comment_df'):
                         comment_df = st.session_state.comment_df
