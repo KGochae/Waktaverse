@@ -26,10 +26,9 @@ import ast  # 문자열을 파이썬 리스트로 변환하기 위한 모듈
 
 # 일부 전처리 및 댓글 수집
 from preprocess import data_diff, hot_video
-from yout import get_comment, nivo_pie
 
 # keyword 분석
-from NLP import wordCount, get_member_images, gomem_video, gomem_comment, monthly_gomem
+from NLP import get_comment, nivo_pie, wordCount, get_member_images, gomem_video, gomem_comment, monthly_gomem
 
 # 일부 css 적용
 with open( "font.css" ) as css:
