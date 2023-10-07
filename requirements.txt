@@ -1,5 +1,6 @@
 pip
 h2o
+default-jre
 absl-py==1.4.0
 aiohttp==3.8.5
 aiosignal==1.3.1
