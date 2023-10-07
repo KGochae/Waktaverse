@@ -6,6 +6,10 @@ import datetime
 import numpy as np
 import pandas_gbq
 
+# 프로그래스 bar
+# from time import sleep
+# from stqdm import stqdm
+
 from collections import Counter
 
 from googleapiclient.discovery import build
@@ -1380,172 +1384,150 @@ if not data.empty:
 
 # --------------------------------------------------------------예상 수익 계산 ----------------------------------------------------------------------------------------- #
 
-    with st.container():
-        st.subheader('📝 예상수익이 높은 컨텐츠 top3')
-        st.caption('예상 수익의 경우 아래와 같은 공식으로 계산 되었습니다. 말그대로 예상 수익입니다. 정확한 편집 비용, 광고 종류/노출횟수를 알 수 없기 때문에 오차가 큽니다.')
-        st.markdown('''                     
-                    > 수익과 비용은 아래의 가정하에 산출하였습니다.
-                    > * 10명중 6명이 광고를 봤다.
-                    > * CPM = 2022년 기준 3500원
-                    > * 유튜브 광고 수익 = 3500 * (조회수 * 0.6) / 1000) * 0.55(수수료)
-                    > * 편집비용 = 분당 20,000원                    
-                    > * 비용은 편집비용만 고려하였으며 30분이상인 경우 풀영상으로 파악하여 비용을 100,000원으로 고정                                                                                                       
-                    ''')
-        # st.write('영상길이별로 수익이 높은 영상을 나눠보는 것도 괜찮을 듯 하다.\
-                #  모든 영상을 비교하는 것보다 영상길이별, 년도별, 재생목록별로 나눠보는 것도 괜찮을듯 ')
+    # with st.container():
+    #     st.subheader('📝 예상수익이 높은 컨텐츠 top3')
+    #     st.caption('예상 수익의 경우 아래와 같은 공식으로 계산 되었습니다. 말그대로 예상 수익입니다. 정확한 편집 비용, 광고 종류/노출횟수를 알 수 없기 때문에 오차가 큽니다.')
+    #     st.markdown('''                     
+    #                 > 수익과 비용은 아래의 가정하에 산출하였습니다.
+    #                 > * 10명중 6명이 광고를 봤다.
+    #                 > * CPM = 2022년 기준 3500원
+    #                 > * 유튜브 광고 수익 = 3500 * (조회수 * 0.6) / 1000) * 0.55(수수료)
+    #                 > * 편집비용 = 분당 20,000원                    
+    #                 > * 비용은 편집비용만 고려하였으며 30분이상인 경우 풀영상으로 파악하여 비용을 100,000원으로 고정                                                                                                       
+    #                 ''')
 
-
-        # with st.form(key="2023수익계산"):
-        #     submit_search = st.form_submit_button("확인")
-        #     # 2023년 영상기준 예상 수익계산을 위해서 영상의 길이를 가져와야한다.
-        #     # yesterday = today - pd.Timedelta(days=1)
-
-        #     video_23 = merged_df[merged_df['down_at'] == today].drop_duplicates(subset=['video_id']) # (merged_df['year'] == '2023') &
-        #     video_ids = video_23['video_id'].tolist()
-
-        #     if submit_search:
-        #         duration_df = video_duration(video_ids, api_key)                
-        #         st.session_state.duration_df = duration_df 
-
-        # if hasattr(st.session_state, 'duration_df'):
-        #     duration_df = st.session_state.duration_df   
-        #     df = pd.merge(video_23, duration_df, on='video_id')
-        #     df = benfit_cal(df)
-        #     df = df[~ df['playlistId'].isin(['PLWTycz4el4t7ZCxkGYyekoP1iBxmOM4zZ','PLWTycz4el4t7BFSfhv_ixrWE9IIsqGQaj','PLWTycz4el4t7BFSfhv_ixrWE9IIsqGQaj'])]
-        #     df = df[df['year'] == '2023']
-
-        # 업로드된 파일이 있을 경우에만 처리
-        if uploaded_file is not None:
-            # 업로드된 CSV 파일을 pandas DataFrame으로 읽기
+    #     # 업로드된 파일이 있을 경우에만 처리
+    #     if uploaded_file is not None:
+    #         # 업로드된 CSV 파일을 pandas DataFrame으로 읽기
         
-            df = pd.read_csv(uploaded_file)
-            df = benfit_cal(df)
-            df = df.sort_values(by='benefit', ascending = False).reset_index()
-            df = df[~df['playlist_title'].str.contains('MUSIC')]
-            df = df[df['channel'] == 'waktaverse']
+    #         df = pd.read_csv(uploaded_file)
+    #         df = benfit_cal(df)
+    #         df = df.sort_values(by='benefit', ascending = False).reset_index()
+    #         df = df[~df['playlist_title'].str.contains('MUSIC')]
+    #         df = df[df['channel'] == 'waktaverse']
 
               
-            df.loc[df['playlist_title'].str.contains('YOUTUBE|이세여고|OFFICIAL'), 'playlist_title'] = 'ISEGYE IDOL : 예능' # 이세돌 카테고리 통합
-            df.loc[df['playlist_title'].str.contains('GOMEM|MIDDLE'), 'playlist_title'] = 'WAKTAVERSE : 예능'
+    #         df.loc[df['playlist_title'].str.contains('YOUTUBE|이세여고|OFFICIAL'), 'playlist_title'] = 'ISEGYE IDOL : 예능' # 이세돌 카테고리 통합
+    #         df.loc[df['playlist_title'].str.contains('GOMEM|MIDDLE'), 'playlist_title'] = 'WAKTAVERSE : 예능'
 
-            st.write(df)
+    #         st.write(df)
 
-            # df = df[df['playlist_title'].isin(['ISEGYE IDOL : 예능','WAKTAVERSE : 예능','shorts'])]
+    #         # df = df[df['playlist_title'].isin(['ISEGYE IDOL : 예능','WAKTAVERSE : 예능','shorts'])]
 
-            group_1 = df[df['seconds'] < 600].reset_index() # 15분 미만
-            group_2 = df[df['seconds'] >= 600].reset_index() # 15분 이상
-            group_3 = df[df['seconds'] >= 1800].reset_index() # 30분 이상
-            group_4 = df[df['seconds'] > 0 ].reset_index()
+    #         group_1 = df[df['seconds'] < 600].reset_index() # 15분 미만
+    #         group_2 = df[df['seconds'] >= 600].reset_index() # 15분 이상
+    #         group_3 = df[df['seconds'] >= 1800].reset_index() # 30분 이상
+    #         group_4 = df[df['seconds'] > 0 ].reset_index()
 
-            group_wakta = df[df['playlist_title'].str.contains('WAKTA')].reset_index()
-            group_idol = df[df['playlist_title'].str.contains('IDOL')].reset_index()
+    #         group_wakta = df[df['playlist_title'].str.contains('WAKTA')].reset_index()
+    #         group_idol = df[df['playlist_title'].str.contains('IDOL')].reset_index()
 
-            col1,col2= st.columns([1,1])           
-            with col1:
-                c1,c2 = st.columns([1,3])
-                with c1:
-                    year_option = st.selectbox('년도', [2023, 2022, 2021,'all'], key='group_video_year')
+    #         col1,col2= st.columns([1,1])           
+    #         with col1:
+    #             c1,c2 = st.columns([1,3])
+    #             with c1:
+    #                 year_option = st.selectbox('년도', [2023, 2022, 2021,'all'], key='group_video_year')
 
-                with c2:
-                    option = st.selectbox('정렬기준', ['15분 미만','15분 이상','30분 이상','all'], key='group_video_seconds')
+    #             with c2:
+    #                 option = st.selectbox('정렬기준', ['15분 미만','15분 이상','30분 이상','all'], key='group_video_seconds')
 
-                if option == '15분 미만':
-                    df = group_1[group_1['year'] == year_option]
-                elif option == '15분 이상':
-                    df = group_2[group_2['year'] == year_option]
-                elif  option == '30분 이상':
-                    df = group_3[group_2['year'] == year_option]
-                elif year_option == 'all':
-                    df = group_4
+    #             if option == '15분 미만':
+    #                 df = group_1[group_1['year'] == year_option]
+    #             elif option == '15분 이상':
+    #                 df = group_2[group_2['year'] == year_option]
+    #             elif  option == '30분 이상':
+    #                 df = group_3[group_2['year'] == year_option]
+    #             elif year_option == 'all':
+    #                 df = group_4
 
             
-                # df = df[df['year'] == year_option]  # 년도에 따라 필터링
+    #             # df = df[df['year'] == year_option]  # 년도에 따라 필터링
 
-                grouped = df.groupby('playlist_title').agg({
-                    'view_count':  'mean',
-                    'like_count' : 'mean',
-                    'comment_count': 'mean',
-                    'cost':'mean',
-                    'benefit':'mean',
-                    'seconds':'mean',
-                    'title': 'count'
-                }).round(0).reset_index()
+    #             grouped = df.groupby('playlist_title').agg({
+    #                 'view_count':  'mean',
+    #                 'like_count' : 'mean',
+    #                 'comment_count': 'mean',
+    #                 'cost':'mean',
+    #                 'benefit':'mean',
+    #                 'seconds':'mean',
+    #                 'title': 'count'
+    #             }).round(0).reset_index()
 
-                st.markdown('''##### 영상길이별 통계값(평균) ''')
-                st.dataframe(grouped)
+    #             st.markdown('''##### 영상길이별 통계값(평균) ''')
+    #             st.dataframe(grouped)
 
-                # st.dataframe(df[['playlist_title','publishedAt','title','view_count','like_count','seconds','ad_count','cost','benefit']])   
+    #             # st.dataframe(df[['playlist_title','publishedAt','title','view_count','like_count','seconds','ad_count','cost','benefit']])   
 
-            with col2:
+    #         with col2:
 
-                from scipy.stats import *
+    #             from scipy.stats import *
 
-                # st.subheader('영상의 타이틀(고멤,이세돌)에 따라 평균 수익, 조회수, 좋아요, 댓글수에 차이가 있을까?')
+    #             # st.subheader('영상의 타이틀(고멤,이세돌)에 따라 평균 수익, 조회수, 좋아요, 댓글수에 차이가 있을까?')
 
-                option = st.selectbox('변수', ['view_count','reaction','benefit','cost'], key='t-test')                
+    #             option = st.selectbox('변수', ['view_count','reaction','benefit','cost'], key='t-test')                
 
-                group_w = group_wakta[option]
-                group_i = group_idol[option]
+    #             group_w = group_wakta[option]
+    #             group_i = group_idol[option]
 
-                st.subheader(f'{option}')
+    #             st.subheader(f'{option}')
 
-                st.markdown('''##### 왜도''')
-                st.markdown(f''' 
-                            * 고정멤버:{round(skew(group_w),3)}
-                            * 이세돌:{round(skew(group_i),3)}
-                            ''')
+    #             st.markdown('''##### 왜도''')
+    #             st.markdown(f''' 
+    #                         * 고정멤버:{round(skew(group_w),3)}
+    #                         * 이세돌:{round(skew(group_i),3)}
+    #                         ''')
 
 
-                # 등분산성
-                statistic_l, pvalue_l = levene(group_w, group_i)
-                if pvalue_l < 0.05:
-                    statistic_m, pvalue_m = mannwhitneyu(group_w, group_i)                    
-                    st.markdown(f''' 
-                                ##### levene
-                                * statistic : {round(statistic_l,3)} , p-value: {round(pvalue_l,3)}
-                                * 등분산성이 가정되지 않아 비모수적인 방법을 이용합니다(mannwhitneyu)
-                                ''')
-                    if pvalue_m < 0.05:
-                        st.markdown(f'''
-                                ##### t-test
-                                * statistic : {round(statistic_m,3)} , p-value : {round(pvalue_m,3)}
-                                * mannwhitneyu 결과 평균 {option} 의 차이가 통계적으로 유의미합니다.
-                                 ''')
-                    else:
-                        st.markdown(f'''mannwhitneyu 결과 두 그룹간 {option}은 통계적으로 큰 차이가 없습니다.
-                                    (* p-value : {round(pvalue_m,3)})
-                                    ''')
+    #             # 등분산성
+    #             statistic_l, pvalue_l = levene(group_w, group_i)
+    #             if pvalue_l < 0.05:
+    #                 statistic_m, pvalue_m = mannwhitneyu(group_w, group_i)                    
+    #                 st.markdown(f''' 
+    #                             ##### levene
+    #                             * statistic : {round(statistic_l,3)} , p-value: {round(pvalue_l,3)}
+    #                             * 등분산성이 가정되지 않아 비모수적인 방법을 이용합니다(mannwhitneyu)
+    #                             ''')
+    #                 if pvalue_m < 0.05:
+    #                     st.markdown(f'''
+    #                             ##### t-test
+    #                             * statistic : {round(statistic_m,3)} , p-value : {round(pvalue_m,3)}
+    #                             * mannwhitneyu 결과 평균 {option} 의 차이가 통계적으로 유의미합니다.
+    #                              ''')
+    #                 else:
+    #                     st.markdown(f'''mannwhitneyu 결과 두 그룹간 {option}은 통계적으로 큰 차이가 없습니다.
+    #                                 (* p-value : {round(pvalue_m,3)})
+    #                                 ''')
  
-                else :
-                    # t-검정 실행
-                    statistic_t, pvalue_t = ttest_ind(group_w, group_i)
-                    st.markdown(f'''
-                                ##### levene
-                                * statistic : {round(statistic_l,3)} , p-value: {round(pvalue_l,3)}
-                                * 등분산성을 만족합니다 
-                                ''')
-                    if pvalue_t < 0.05:
-                        st.markdown(f'''
-                                ##### t-test
-                                * statistic : {round(statistic_t,3)} , p-value : {round(pvalue_t,3)}
-                                * t-test 결과 평균 {option} 의 차이가 통계적으로 유의미합니다.
-                                 ''')
-                    else:
-                        st.markdown(f'''t-test 결과 두 그룹간 {option}은 통계적으로 큰 차이가 없습니다.
-                                    (* p-value : {round(pvalue_t,3)})
-                                    ''')
+    #             else :
+    #                 # t-검정 실행
+    #                 statistic_t, pvalue_t = ttest_ind(group_w, group_i)
+    #                 st.markdown(f'''
+    #                             ##### levene
+    #                             * statistic : {round(statistic_l,3)} , p-value: {round(pvalue_l,3)}
+    #                             * 등분산성을 만족합니다 
+    #                             ''')
+    #                 if pvalue_t < 0.05:
+    #                     st.markdown(f'''
+    #                             ##### t-test
+    #                             * statistic : {round(statistic_t,3)} , p-value : {round(pvalue_t,3)}
+    #                             * t-test 결과 평균 {option} 의 차이가 통계적으로 유의미합니다.
+    #                              ''')
+    #                 else:
+    #                     st.markdown(f'''t-test 결과 두 그룹간 {option}은 통계적으로 큰 차이가 없습니다.
+    #                                 (* p-value : {round(pvalue_t,3)})
+    #                                 ''')
 
 
                 
 
-                # st.markdown(f'''
-                #             > #### T-test 결과
-                #             > * 등분산성을 만족하지 않으므로, 비모수적인 방법을 사용 했으며.
-                #             > * 영상의 길이별로 ,조회수, 댓글수, 수익면에서 통계적으로 유의미한 차이가 없었지만. 
-                #             > * 재생목록별로 평균 '좋아요' 수는 차이가 있었습니다. 
-                #             > * statistic : {round(statistic,3)} p_value : {round(p_value,3)}
-                #             > * 이세돌 영상의 '좋아요'가 평균적으로 더 높습니다.
-                #             ''')
+    #             # st.markdown(f'''
+    #             #             > #### T-test 결과
+    #             #             > * 등분산성을 만족하지 않으므로, 비모수적인 방법을 사용 했으며.
+    #             #             > * 영상의 길이별로 ,조회수, 댓글수, 수익면에서 통계적으로 유의미한 차이가 없었지만. 
+    #             #             > * 재생목록별로 평균 '좋아요' 수는 차이가 있었습니다. 
+    #             #             > * statistic : {round(statistic,3)} p_value : {round(p_value,3)}
+    #             #             > * 이세돌 영상의 '좋아요'가 평균적으로 더 높습니다.
+    #             #             ''')
 
 
     st.divider()        
@@ -1768,7 +1750,7 @@ if not data.empty:
                             ]
                         with dashboard.Grid(layout):
                             for i in range(5):
-                                mui.Card(
+                                mui.Box(
                                         mui.CardContent( # 재생목록/링크
                                             sx={'display':'flex',
                                                 'padding': '2px 0 0 0'
@@ -1811,25 +1793,28 @@ if not data.empty:
                                                 mui.Divider(orientation="vertical",sx={"border-width":"1px"}), # divider 추가
                                             
                                                 mui.Box(
-                                                    mui.Typography(
-                                                        f"{int(gomem_hot_video['cnt'].iloc[i])}",
-                                                            variant='body2', 
-                                                        sx={
-                                                            "font-size" : "25px",
-                                                            "fontWeight":"bold",
-                                                            "text-align":"center",
-                                                            "height":"30px"
-                                                            },     
-                                                        ),   
-                                                    mui.Typography(
-                                                        "언급량",
-                                                            variant='body2', 
-                                                        sx={
-                                                            "font-size" : "10px",
-                                                            "fontWeight":"bold",
-                                                            "text-align":"center"
-                                                            },     
-                                                        ),    
+                                                    sx={"align-items": "center"},
+                                                    children = [
+                                                        mui.Typography(
+                                                            f"{int(gomem_hot_video['cnt'].iloc[i])}",
+                                                                variant='body2', 
+                                                            sx={
+                                                                "font-size" : "25px",
+                                                                "fontWeight":"bold",
+                                                                "text-align":"center",
+                                                                "height":"30px"
+                                                                },     
+                                                            ),   
+                                                        mui.Typography(
+                                                            "언급량",
+                                                                variant='body2', 
+                                                            sx={
+                                                                "font-size" : "10px",
+                                                                "fontWeight":"bold",
+                                                                "text-align":"center"
+                                                                },     
+                                                            )
+                                                        ]                                                        
                                                     ),
                                                 ]
                                             )                       
@@ -2255,3 +2240,96 @@ if not data.empty:
 
 else:
     st.write('NO DATA')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        # nivo.Line(
+                        #     data= [diff_nivo_data[i]],
+                        #     margin={'top': 50, 'right': 100, 'bottom': 40, 'left': 100},
+                        #     xScale={'type': 'point'},
+                        #     yScale={
+                        #         'type': 'linear',
+                        #         'min': 0,
+                        #         'max': 'auto',
+                        #         'stacked': True,
+                        #         'reverse': False
+                        #     },
+                        #     yFormat=' >-.2s',
+                        #     # curve="catmullRom",
+                        #     axisTop=None,
+                        #     axisRight=None,
+                        #     axisBottom=
+                        #     {
+                        #         'tickCount': 5,
+                        #         'tickValues': None,  # X축 값들 사이에 구분선을 그리기 위해 설정
+                        #         'tickSize': 0,
+                        #         'tickPadding': 5,
+                        #         'tickRotation': 0,
+                        #         'legendOffset': 36,
+                        #         'legendPosition': 'middle',
+                        #     },
+                        #     axisLeft={
+                        #         'tickSize': 4,
+                        #         'tickPadding': 10,
+                        #         'tickRotation': 0,
+                        #         'legend': '조회수',
+                        #         'legendOffset': -70,
+                        #         'legendPosition': 'middle'
+                        #     },
+                        #     colors= {'scheme': 'accent'},
+                        #     enableGridX = False,
+                        #     enableGridY = False,
+                        #     lineWidth=5,
+                        #     pointSize=5,
+                        #     pointColor='white',
+                        #     pointBorderWidth=1,
+                        #     pointBorderColor={'from': 'serieColor'},
+                        #     pointLabelYOffset=-12,
+                        #     useMesh=True,
+                        
+                        #     theme={
+                        #             # "background": "#171717", # #262730 #100F0F
+                        #             "textColor": "white",
+                        #             "tooltip": {
+                        #                 "container": {
+                        #                     "background": "#3a3c4a",
+                        #                     "color": "white",
+                        #                 }
+                        #             }
+                        #         },
+                        #     animate= False
+
+                        # )
+
+
+# with elements("multiple_children"):
+
+#     mui.Button(
+#         mui.icon.ArrowDropUp)
+
+
+
+
+# with elements("hot_viddeo"):
+#     layout=[
+#            dashboard.Item("item_1", 0, 0, 2, 1.5, isDraggable=True, isResizable=False ),
+#     ]

@@ -54,17 +54,17 @@ def data_diff (data):
     subscribe = data[data['subscribe'].notna()][['subscribe','down_at']].drop_duplicates() 
     # subscribe['down_at'] = pd.to_datetime(subscribe['down_at']).dt.strftime('%Y-%m-%d')  # nivo 그래프에 표현하려면 date가 str 이어야한다.
     subscribe['down_at'] = pd.to_datetime(subscribe['down_at'], format='%Y-%m-%d')  
-
     subscribe['prev_subscribe'] = subscribe['subscribe'].shift()
     subscribe['subscribe_diff'] = subscribe['subscribe'] - subscribe['prev_subscribe']
     subscribe['week_start'] = subscribe['down_at'] - pd.to_timedelta(subscribe['down_at'].dt.dayofweek, unit='d')
     subscribe.groupby('week_start')['subscribe_diff'].sum().reset_index()    
     subscribe_week = subscribe.groupby('week_start').agg({'subscribe_diff': 'sum'}).reset_index()
     subscribe_week['week_start'] = pd.to_datetime(subscribe_week['week_start']).dt.strftime('%Y-%m-%d')
-    
+    subscribe_week = subscribe_week[subscribe_week['week_start'] >= '2023-08-07 00:00:00']
+ 
     return data, playlist_titles, subscribe, subscribe_week
 
-
+@st.cache_data
 def total_diff(merged_df,playlist_titles):
     # 재생목록별 조회수, 구독자
     total_diff = pd.DataFrame()    
