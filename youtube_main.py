@@ -961,7 +961,7 @@ if not data.empty:
                         submit_search = st.form_submit_button(label="Submit")
 
                     if submit_search:
-                        st.write('sorry not yet..🥹')
+                        st.write('api 토큰방지 테스트중입니다...')
                         # with st.spinner('댓글수집중..'):
                         #     comment_df = get_comment(videoId)
                         #     pos_nega = nivo_pie(comment_df)               
