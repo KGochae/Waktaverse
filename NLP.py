@@ -92,14 +92,14 @@ def get_comment(videoId):
 
 
 # 토크나이져
-tokenizer_pickle_path = "C:/scraping/model/tokenizer.pickle"
+tokenizer_pickle_path = "model/tokenizer.pickle"
 with open(tokenizer_pickle_path, "rb") as f:
     tokenizer = pickle.load(f)
 
 # 모델
 @st.cache_resource
 def loaded_model():
-    model = load_model('C:/scraping/model/Bilstm.h5')
+    model = load_model('model/Bilstm.h5')
     return model
 nlp_model = loaded_model()
 
@@ -236,7 +236,7 @@ def get_member_images(top_members):
     member_images = {}
     for i, member in enumerate(top_members):
         name = member[0]
-        image_path = f"C:/scraping/img/{name}.jpg"  # 이미지 파일 이름 생성 
+        image_path = f"img/{name}.jpg"  # 이미지 파일 이름 생성 
         img = Image.open(image_path).convert("RGBA")
 
         # 원형으로 크롭
