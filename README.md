@@ -51,8 +51,9 @@ Youtube channel Waktaverse statics (정리중..)
 ![image](https://github.com/KGochae/Waktaverse/assets/86241587/508a1cc0-a047-4f78-971c-f804bbe35069)
 
 #### 컨텐츠별 추정이익 
-> 연도/채널 별 영상개수,추정이익,시청자반응,조회수
-![image](https://github.com/KGochae/Waktaverse/assets/86241587/92c601ca-8fb0-4d3f-a855-8c2d7c20dcf0)
+> 연도/채널 별 영상개수,조회수,추정이익,시청자반응
+ 
+![image](https://github.com/KGochae/Waktaverse/assets/86241587/a0ee8d49-9af7-4474-b0ac-32ed14922f36)
 
 ### 다중회귀분석결과
 > 목표변수를 benefit(추정이익) 과 reaction(시청자반응)으로 두고 어떤 변수들이 유의하게 영향을 주는지 다중회귀분석을 해보았습니다.
