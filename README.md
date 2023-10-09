@@ -36,5 +36,6 @@ Youtube channel Waktaverse statics (정리중..)
 
 ![image](https://github.com/KGochae/Waktaverse/assets/86241587/7cb32df6-6cdf-4f62-9663-88e7096ab52e)
 
-
-.....👀 진행중
+### waktaverse chart
+> * 재생목록별 영상들의 조회수 증가량을 볼 수 있습니다.
+![image](https://github.com/KGochae/Waktaverse/assets/86241587/ac719107-3761-4724-9a09-dede51a737c1)
