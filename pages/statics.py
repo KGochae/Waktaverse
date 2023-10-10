@@ -70,7 +70,8 @@ st.markdown(css, unsafe_allow_html=True)
 
 
 # CSV 파일 업로드
-uploaded_file = st.sidebar.file_uploader('CSV 파일을 업로드하세요.', type=['csv'])
+uploaded_file = pd.read_csv('csv_data/waktaverse_benefit.csv')
+
 
 
 # 업로드된 파일이 있을 경우에만 처리
