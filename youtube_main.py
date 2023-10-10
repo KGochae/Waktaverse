@@ -21,7 +21,6 @@ from preprocess import data_diff, hot_video
 
 # keyword 분석
 from NLP import get_comment, nivo_pie, wordCount, get_member_images, gomem_video, gomem_comment, monthly_gomem
-from yout import get_video_isaeedol
 
 # 일부 css 적용
 with open( "font.css" ) as css:
