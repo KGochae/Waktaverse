@@ -1697,7 +1697,7 @@ if not data.empty:
         st.subheader('🎧(Youtube) 이세계아이돌 챌린지 영상 추세 ')            
         st.caption(' Youtube 에서 "이세계아이돌"과 관련된 영상들이 얼마나 늘어나고 있는지 추세를 확인해 보았습니다.(검색했을 때 뜨는 기준)')
         # if uploaded_file is not None:
-        isaedol = pd.read_csv('csv_data\이세계아이돌_video.csv')
+        isaedol = pd.read_csv('csv_data/이세계아이돌_video.csv')
 
     # with st.form(key='isaedol youtube video count'):
         # submit_search = st.form_submit_button('데이터 수집')
