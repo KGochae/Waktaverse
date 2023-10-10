@@ -1,16 +1,8 @@
-
 import io
 import streamlit as st
 import pandas as pd
-import time
 import datetime
-import numpy as np
-import pandas_gbq
-
-# 프로그래스 bar
-# from time import sleep
-# from stqdm import stqdm
-
+import matplotlib.pyplot as plt
 from collections import Counter
 
 from googleapiclient.discovery import build
@@ -21,14 +13,15 @@ from streamlit_elements import dashboard
 from streamlit_elements import nivo, elements, mui, media
 # from st_files_connection import FilesConnection # ENCODING 에러가 자꾸 난다.
 
-from PIL import Image, ImageDraw
-import ast  # 문자열을 파이썬 리스트로 변환하기 위한 모듈
+# 문자열을 파이썬 리스트로 변환하기 위한 모듈
+import ast 
 
 # 일부 전처리 및 댓글 수집
 from preprocess import data_diff, hot_video
 
 # keyword 분석
 from NLP import get_comment, nivo_pie, wordCount, get_member_images, gomem_video, gomem_comment, monthly_gomem
+from yout import get_video_isaeedol
 
 # 일부 css 적용
 with open( "font.css" ) as css:
@@ -63,9 +56,6 @@ client = bigquery.Client(credentials=credentials)
 main_bucket = 'waktaverse_test'
 comment_bucket = 'waktaverse_comment'
 
-# conn = st.experimental_connection('gcs', type=FilesConnection)
-# csv_file_path = f"gs://waktaverse/6월4주.csv"
-# data = conn.read(csv_file_path, input_format="csv",encoding='')
 
 def load_maindata():
     client = storage.Client(credentials=credentials)
@@ -123,7 +113,6 @@ if not data.empty:
     # 일부 전처리
     merged_df, playlist_titles, subscribe, subscribe_week = data_diff(data)
     total_diff, top3_videos,top3_music, top3_videos_week, top3_music_week, top3_videos_month, top3_music_month = hot_video(merged_df,playlist_titles, year, month)
-    
 # -------------------------------------------------------- MAIN CONTENTS(재생목록, 구독자, hot_video) ------------------------------------------------------------- #
 
     with st.container():  ### 📊 재생목록 조회수 증가량
@@ -223,249 +212,247 @@ if not data.empty:
 
 
     with st.container(): ### 재생목록별 조회수 증가량
-        # col1,col2 = st.columns([1.7,1])
+        with st.container():       
+                with elements("playlist_line_chart"):
+                    layout = [
+                        dashboard.Item("item_1", 0, 0, 8, 2),
+                        dashboard.Item("item_2", 8, 0, 2, 2),
+                        dashboard.Item("item_3", 10, 0, 1.5, 2)
 
-        # with col1: # playlist_line_chart
-            with st.container():       
-                    with elements("playlist_line_chart"):
-                        layout = [
-                            dashboard.Item("item_1", 0, 0, 8, 2),
-                            dashboard.Item("item_2", 8, 0, 2, 2),
-                            dashboard.Item("item_3", 10, 0, 1.5, 2)
+                    ]
 
-                        ]
+                    with dashboard.Grid(layout):
+                                                        
+                            mui.Box( # 재생목록별 전체 조회수 증가량
+                                    nivo.Line(
+                                        data= diff,
+                                        margin={'top': 50, 'right': 15, 'bottom': 20, 'left': 55},
+                                        xScale={'type': 'point',
+                                                },
 
-                        with dashboard.Grid(layout):
-                                                            
-                                mui.Box( # 재생목록별 전체 조회수 증가량
-                                        nivo.Line(
-                                            data= diff,
-                                            margin={'top': 50, 'right': 15, 'bottom': 20, 'left': 55},
-                                            xScale={'type': 'point',
-                                                    },
+                                        curve="cardinal",
+                                        axisTop=None,
+                                        axisRight=None,
+                                        axisBottom=None,
 
-                                            curve="cardinal",
-                                            axisTop=None,
-                                            axisRight=None,
-                                            axisBottom=None,
-
-                                            # axisLeft={
-                                            #     'tickSize': 4,
-                                            #     'tickPadding': 10,
-                                            #     'tickRotation': 0,
-                                            #     'legend': '조회수',
-                                            #     'legendOffset': -70,
-                                            #     'legendPosition': 'middle'
-                                            # },
-                                            colors= {'scheme': 'accent'},
-                                            enableGridX = False,
-                                            enableGridY = False,
-                                            enableArea = True,
-                                            areaOpacity = 0.5   ,
-                                            lineWidth=2,
-                                            pointSize=1,
-                                            pointColor='white',
-                                            pointBorderWidth=0.5,
-                                            pointBorderColor={'from': 'serieColor'},
-                                            pointLabelYOffset=-12,
-                                            useMesh=True,
-                                            legends=[
-                                                        {
-                                                        'anchor': 'top-left',
-                                                        'direction': 'column',
-                                                        'justify': False,
-                                                        # 'translateX': -30,
-                                                        # 'translateY': -200,
-                                                        'itemsSpacing': 0,
-                                                        'itemDirection': 'left-to-right',
-                                                        'itemWidth': 80,
-                                                        'itemHeight': 15,
-                                                        'itemOpacity': 0.75,
-                                                        'symbolSize': 12,
-                                                        'symbolShape': 'circle',
-                                                        'symbolBorderColor': 'rgba(0, 0, 0, .5)',
-                                                        'effects': [
-                                                                {
-                                                                'on': 'hover',
-                                                                'style': {
-                                                                    'itemBackground': 'rgba(0, 0, 0, .03)',
-                                                                    'itemOpacity': 1
-                                                                    }
+                                        # axisLeft={
+                                        #     'tickSize': 4,
+                                        #     'tickPadding': 10,
+                                        #     'tickRotation': 0,
+                                        #     'legend': '조회수',
+                                        #     'legendOffset': -70,
+                                        #     'legendPosition': 'middle'
+                                        # },
+                                        colors= {'scheme': 'accent'},
+                                        enableGridX = False,
+                                        enableGridY = False,
+                                        enableArea = True,
+                                        areaOpacity = 0.5   ,
+                                        lineWidth=2,
+                                        pointSize=1,
+                                        pointColor='white',
+                                        pointBorderWidth=0.5,
+                                        pointBorderColor={'from': 'serieColor'},
+                                        pointLabelYOffset=-12,
+                                        useMesh=True,
+                                        legends=[
+                                                    {
+                                                    'anchor': 'top-left',
+                                                    'direction': 'column',
+                                                    'justify': False,
+                                                    # 'translateX': -30,
+                                                    # 'translateY': -200,
+                                                    'itemsSpacing': 0,
+                                                    'itemDirection': 'left-to-right',
+                                                    'itemWidth': 80,
+                                                    'itemHeight': 15,
+                                                    'itemOpacity': 0.75,
+                                                    'symbolSize': 12,
+                                                    'symbolShape': 'circle',
+                                                    'symbolBorderColor': 'rgba(0, 0, 0, .5)',
+                                                    'effects': [
+                                                            {
+                                                            'on': 'hover',
+                                                            'style': {
+                                                                'itemBackground': 'rgba(0, 0, 0, .03)',
+                                                                'itemOpacity': 1
                                                                 }
-                                                            ]
-                                                        }
-                                                    ],                            
-                                            theme={
-                                                    # "background-color": "rgba(158, 60, 74, 0.2)",
-                                                    "textColor": "white",
-                                                    "tooltip": {
-                                                        "container": {
-                                                            "background": "#3a3c4a",
-                                                            "color": "white",
-                                                        }
-                                                    }
-                                                },
-                                            animate= False)
-                                            ,key="item_1",sx={"borderRadius":"15px", "borderRadius":"15px","outline": "1px solid #31323b"}) # "background-color":"rgb(49 50 59)"
-
-                                mui.Box( # today view count
-                                    children = [
-                                        mui.Typography(
-                                            "  View count diff ",
-                                            variant="body2",
-                                            sx={ # "fontFamily":"Pretendard Variable",
-                                                "font-size": "24px",
-                                                "pt":2} ,
-                                        ),
-
-                                        mui.Typography(
-                                            f"{round(today_total)}",
-                                            variant="body2",
-                                            sx={
-                                                "font-size": "32px",
-                                                "fontWeight":"bold",
-                                                "padding-top": 0
-                                                } ,
-                                            
-                                        ),
-                                        mui.Divider(),
-
-                                        nivo.Pie(
-                                                data=diff,
-                                                margin={"top": 30, "right": 20, "bottom": 110, "left": 20 },
-                                                sortByValue=True,
-                                                innerRadius={0.5},
-                                                padAngle={2},
-                                                colors= { 'scheme': 'accent' }, # pastel1
-                                                borderWidth={1},
-                                                borderColor={
-                                                    "from": 'color',
-                                                    "modifiers": [
-                                                        [
-                                                            'opacity',
-                                                            0.2
+                                                            }
                                                         ]
-                                                    ]
-                                                },
-                                                enableArcLinkLabels=False,
-                                                arcLabel='id',
-                                                arcLabelsRadiusOffset={1.3},
-                                                arcLinkLabelsSkipAngle={5},
-                                                arcLinkLabelsThickness={5},
-                                                # arcLabelsTextColor={ "from": 'white', "modifiers": [['brighter',0.5]] },
-                                                arcLabelsTextColor="white",
-                                                arcLabelsSkipAngle={10},
-                                                # legends=[
-                                                #     {
-                                                #         "anchor": "top-right",
-                                                #         "direction": "column",
-                                                #         "translateX": -50,
-                                                #         "translateY": 0,
-                                                #         "itemWidth": 8,
-                                                #         "itemHeight": 15,
-                                                #         "itemTextColor": "white",
-                                                #         "symbolSize": 12,
-                                                #         "symbolShape": "circle",
-                                                #         "effects": [
-                                                #             {
-                                                #                 "on": "hover",
-                                                #                 "style": {
-                                                #                     "itemTextColor": "white",
-                                                #                     'itemBackground': 'rgba(0, 0, 0, .03)',
-                                                #                     'itemOpacity': 1
-                                                #                 }
-                                                #             }
-                                                #         ]
-                                                #     }
-                                                # ],
-                                                theme={
-                                                    # "background": "#141414",
-                                                    "textColor": "white",
-                                                    "tooltip": {
-                                                        "container": {
-                                                            "background": "#3a3c4a",
-                                                            "color": "white",
-                                                        }
+                                                    }
+                                                ],                            
+                                        theme={
+                                                # "background-color": "rgba(158, 60, 74, 0.2)",
+                                                "textColor": "white",
+                                                "tooltip": {
+                                                    "container": {
+                                                        "background": "#3a3c4a",
+                                                        "color": "white",
                                                     }
                                                 }
-                                            )
-                                    
-                                    ]
-                                    ,key='item_2', sx={"text-align":"center", "borderRadius":"15px", "outline": "1px solid #31323b"}) # rgb(49 50 59)
-
-                                mui.Box( # subscribe
-                                    children = [
-                                        mui.Typography(
-                                            " subscribe ",
-                                            variant="body2",
-                                            sx={"fontFamily":"Pretendard Variable",
-                                                "font-size": "24px",
-                                                "pt":2} ,
-                                        ),
-
-                                        mui.Typography(
-                                            f"{round(subscribe['subscribe'].max())}",
-                                            variant="body2",
-                                            sx={
-                                                "font-size": "32px",
-                                                "fontWeight":"bold",
-                                                "padding-top": 0
-                                                } ,
-                                            
-                                        ),
-                                        mui.Divider(),
-
-                                        nivo.Line(
-                                            data =subscribe_n,
-                                            margin={'top': 50, 'right': 10, 'bottom': 120, 'left': 10},
-                                            xScale={'type': 'point'},
-                                            yScale={
-                                                'type': 'linear',
-                                                'min': 'auto',
-                                                'max': 'auto',
-                                                'stacked': True,
-                                                'reverse': False
                                             },
-                                            curve="cardinal",
-                                            axisRight=None,
-                                            axisBottom=None,
-                                            # {
-                                            #     'tickCount': 5,
-                                            #     'tickValues': tickValues,  # X축 값들 사이에 구분선을 그리기 위해 설정
-                                            #     'tickSize': 0,
-                                            #     'tickPadding': 5,
-                                            #     'tickRotation': 0,
-                                            #     'legendOffset': 36,
-                                            #     'legendPosition': 'middle',
-                                            # },
-                                            axisLeft=None,
+                                        animate= False)
+                                        ,key="item_1",sx={"borderRadius":"15px", "borderRadius":"15px","outline": "1px solid #31323b"}) # "background-color":"rgb(49 50 59)"
 
-                                            colors=  {'scheme': 'accent'},
-                                            enableGridX = False,
-                                            enableGridY = False,
-                                            lineWidth=3,
-                                            pointSize=0,
-                                            pointColor='white',
-                                            pointBorderWidth=1,
-                                            pointBorderColor={'from': 'serieColor'},
-                                            pointLabelYOffset=-10,
-                                            # enableArea=True,
-                                            # areaOpacity='0.15',
-                                            useMesh=True,                
+                            mui.Box( # today view count
+                                children = [
+                                    mui.Typography(
+                                        "  View count diff ",
+                                        variant="body2",
+                                        sx={ # "fontFamily":"Pretendard Variable",
+                                            "font-size": "24px",
+                                            "pt":2} ,
+                                    ),
+
+                                    mui.Typography(
+                                        f"{round(today_total)}",
+                                        variant="body2",
+                                        sx={
+                                            "font-size": "32px",
+                                            "fontWeight":"bold",
+                                            "padding-top": 0
+                                            } ,
+                                        
+                                    ),
+                                    mui.Divider(),
+
+                                    nivo.Pie(
+                                            data=diff,
+                                            margin={"top": 30, "right": 20, "bottom": 110, "left": 20 },
+                                            sortByValue=True,
+                                            innerRadius={0.5},
+                                            padAngle={2},
+                                            colors= { 'scheme': 'accent' }, # pastel1
+                                            borderWidth={1},
+                                            borderColor={
+                                                "from": 'color',
+                                                "modifiers": [
+                                                    [
+                                                        'opacity',
+                                                        0.2
+                                                    ]
+                                                ]
+                                            },
+                                            enableArcLinkLabels=False,
+                                            arcLabel='id',
+                                            arcLabelsRadiusOffset={1.3},
+                                            arcLinkLabelsSkipAngle={5},
+                                            arcLinkLabelsThickness={5},
+                                            # arcLabelsTextColor={ "from": 'white', "modifiers": [['brighter',0.5]] },
+                                            arcLabelsTextColor="white",
+                                            arcLabelsSkipAngle={10},
+                                            # legends=[
+                                            #     {
+                                            #         "anchor": "top-right",
+                                            #         "direction": "column",
+                                            #         "translateX": -50,
+                                            #         "translateY": 0,
+                                            #         "itemWidth": 8,
+                                            #         "itemHeight": 15,
+                                            #         "itemTextColor": "white",
+                                            #         "symbolSize": 12,
+                                            #         "symbolShape": "circle",
+                                            #         "effects": [
+                                            #             {
+                                            #                 "on": "hover",
+                                            #                 "style": {
+                                            #                     "itemTextColor": "white",
+                                            #                     'itemBackground': 'rgba(0, 0, 0, .03)',
+                                            #                     'itemOpacity': 1
+                                            #                 }
+                                            #             }
+                                            #         ]
+                                            #     }
+                                            # ],
                                             theme={
-                                                    # "background": "#100F0F", # #262730 #100F0F
-                                                    "textColor": "white",
-                                                    "tooltip": {
-                                                        "container": {
-                                                            "background": "#3a3c4a",
-                                                            "color": "white",
-                                                        }
+                                                # "background": "#141414",
+                                                "textColor": "white",
+                                                "tooltip": {
+                                                    "container": {
+                                                        "background": "#3a3c4a",
+                                                        "color": "white",
                                                     }
-                                                },
-                                            animate= False
+                                                }
+                                            }
                                         )
-                                            ]                                
-                                        ,key="item_3",sx={"text-align":"center", "borderRadius":"15px","outline": "1px solid #31323b"})
+                                
+                                ]
+                                ,key='item_2', sx={"text-align":"center", "borderRadius":"15px", "outline": "1px solid #31323b"}) # rgb(49 50 59)
+
+                            mui.Box( # subscribe
+                                children = [
+                                    mui.Typography(
+                                        " subscribe ",
+                                        variant="body2",
+                                        sx={"fontFamily":"Pretendard Variable",
+                                            "font-size": "24px",
+                                            "pt":2} ,
+                                    ),
+
+                                    mui.Typography(
+                                        f"{round(subscribe['subscribe'].max())}",
+                                        variant="body2",
+                                        sx={
+                                            "font-size": "32px",
+                                            "fontWeight":"bold",
+                                            "padding-top": 0
+                                            } ,
+                                        
+                                    ),
+                                    mui.Divider(),
+
+                                    nivo.Line(
+                                        data =subscribe_n,
+                                        margin={'top': 50, 'right': 10, 'bottom': 120, 'left': 10},
+                                        xScale={'type': 'point'},
+                                        yScale={
+                                            'type': 'linear',
+                                            'min': 'auto',
+                                            'max': 'auto',
+                                            'stacked': True,
+                                            'reverse': False
+                                        },
+                                        curve="cardinal",
+                                        axisRight=None,
+                                        axisBottom=None,
+                                        # {
+                                        #     'tickCount': 5,
+                                        #     'tickValues': tickValues,  # X축 값들 사이에 구분선을 그리기 위해 설정
+                                        #     'tickSize': 0,
+                                        #     'tickPadding': 5,
+                                        #     'tickRotation': 0,
+                                        #     'legendOffset': 36,
+                                        #     'legendPosition': 'middle',
+                                        # },
+                                        axisLeft=None,
+
+                                        colors=  {'scheme': 'accent'},
+                                        enableGridX = False,
+                                        enableGridY = False,
+                                        lineWidth=3,
+                                        pointSize=0,
+                                        pointColor='white',
+                                        pointBorderWidth=1,
+                                        pointBorderColor={'from': 'serieColor'},
+                                        pointLabelYOffset=-10,
+                                        # enableArea=True,
+                                        # areaOpacity='0.15',
+                                        useMesh=True,                
+                                        theme={
+                                                # "background": "#100F0F", # #262730 #100F0F
+                                                "textColor": "white",
+                                                "tooltip": {
+                                                    "container": {
+                                                        "background": "#3a3c4a",
+                                                        "color": "white",
+                                                    }
+                                                }
+                                            },
+                                        animate= False
+                                    )
+                                        ]                                
+                                    ,key="item_3",sx={"text-align":"center", "borderRadius":"15px","outline": "1px solid #31323b"})
+
 
 
     with st.container(): ### 뜨는 컨텐츠, 영상반응요약
@@ -477,7 +464,7 @@ if not data.empty:
                 col1_1,col2_1,_ = st.columns([6, 1.2, 0.15])
                 with col1_1:
                     st.markdown('''
-                        ### 🔥뜨는 컨텐츠 TOP3 (예능/노래s)
+                        ### 🔥뜨는 컨텐츠 TOP3 (예능/노래)
                         ''')
                     # st.caption('몇주동안, 몇일동안 상위권 등수를 유지했는지 기록도해보자')
                 with col2_1:
@@ -958,18 +945,17 @@ if not data.empty:
                         videoId = merged_df[merged_df['title'] == top3_title]['video_id'].iloc[0] 
 
                     with col2: # submit
-                        submit_search = st.form_submit_button(label="Submit")
+                        submit_search = st.form_submit_button(label="확인")
 
                     if submit_search:
-                        st.write('api 토큰방지 테스트중입니다...')
-                        # with st.spinner('댓글수집중..'):
-                        #     comment_df = get_comment(videoId)
-                        #     pos_nega = nivo_pie(comment_df)               
-                        #     most_common_words = wordCount(comment_df)
+                        with st.spinner('댓글수집중..'):
+                            comment_df = get_comment(videoId)
+                            pos_nega = nivo_pie(comment_df)               
+                            most_common_words = wordCount(comment_df)
 
-                        #     st.session_state.comment_df = comment_df 
-                        #     st.session_state.pos_nega = pos_nega
-                        #     st.session_state.most_common_words = most_common_words
+                            st.session_state.comment_df = comment_df 
+                            st.session_state.pos_nega = pos_nega
+                            st.session_state.most_common_words = most_common_words
 
                     if hasattr(st.session_state, 'comment_df'):
                         comment_df = st.session_state.comment_df
@@ -1095,7 +1081,7 @@ if not data.empty:
                                             },
                                         ),key="item_2", sx ={'borderRadius': '15px','background': '#262730'})
 
-                                    mui.Box(  # hilight       
+                                    mui.Box(  # 하이라이트       
                                         mui.CardContent(                                            
                                             mui.Typography(
                                                 " TimeLine 하이라이트 ",
@@ -1386,152 +1372,6 @@ if not data.empty:
                 st.divider()
                 st.dataframe(static_music[['title','day','rank_in_cnt','mean_view']])
 
-# --------------------------------------------------------------예상 수익 계산 ----------------------------------------------------------------------------------------- #
-
-    # with st.container():
-    #     st.subheader('📝 예상수익이 높은 컨텐츠 top3')
-    #     st.caption('예상 수익의 경우 아래와 같은 공식으로 계산 되었습니다. 말그대로 예상 수익입니다. 정확한 편집 비용, 광고 종류/노출횟수를 알 수 없기 때문에 오차가 큽니다.')
-    #     st.markdown('''                     
-    #                 > 수익과 비용은 아래의 가정하에 산출하였습니다.
-    #                 > * 10명중 6명이 광고를 봤다.
-    #                 > * CPM = 2022년 기준 3500원
-    #                 > * 유튜브 광고 수익 = 3500 * (조회수 * 0.6) / 1000) * 0.55(수수료)
-    #                 > * 편집비용 = 분당 20,000원                    
-    #                 > * 비용은 편집비용만 고려하였으며 30분이상인 경우 풀영상으로 파악하여 비용을 100,000원으로 고정                                                                                                       
-    #                 ''')
-
-    #     # 업로드된 파일이 있을 경우에만 처리
-    #     if uploaded_file is not None:
-    #         # 업로드된 CSV 파일을 pandas DataFrame으로 읽기
-        
-    #         df = pd.read_csv(uploaded_file)
-    #         df = benfit_cal(df)
-    #         df = df.sort_values(by='benefit', ascending = False).reset_index()
-    #         df = df[~df['playlist_title'].str.contains('MUSIC')]
-    #         df = df[df['channel'] == 'waktaverse']
-
-              
-    #         df.loc[df['playlist_title'].str.contains('YOUTUBE|이세여고|OFFICIAL'), 'playlist_title'] = 'ISEGYE IDOL : 예능' # 이세돌 카테고리 통합
-    #         df.loc[df['playlist_title'].str.contains('GOMEM|MIDDLE'), 'playlist_title'] = 'WAKTAVERSE : 예능'
-
-    #         st.write(df)
-
-    #         # df = df[df['playlist_title'].isin(['ISEGYE IDOL : 예능','WAKTAVERSE : 예능','shorts'])]
-
-    #         group_1 = df[df['seconds'] < 600].reset_index() # 15분 미만
-    #         group_2 = df[df['seconds'] >= 600].reset_index() # 15분 이상
-    #         group_3 = df[df['seconds'] >= 1800].reset_index() # 30분 이상
-    #         group_4 = df[df['seconds'] > 0 ].reset_index()
-
-    #         group_wakta = df[df['playlist_title'].str.contains('WAKTA')].reset_index()
-    #         group_idol = df[df['playlist_title'].str.contains('IDOL')].reset_index()
-
-    #         col1,col2= st.columns([1,1])           
-    #         with col1:
-    #             c1,c2 = st.columns([1,3])
-    #             with c1:
-    #                 year_option = st.selectbox('년도', [2023, 2022, 2021,'all'], key='group_video_year')
-
-    #             with c2:
-    #                 option = st.selectbox('정렬기준', ['15분 미만','15분 이상','30분 이상','all'], key='group_video_seconds')
-
-    #             if option == '15분 미만':
-    #                 df = group_1[group_1['year'] == year_option]
-    #             elif option == '15분 이상':
-    #                 df = group_2[group_2['year'] == year_option]
-    #             elif  option == '30분 이상':
-    #                 df = group_3[group_2['year'] == year_option]
-    #             elif year_option == 'all':
-    #                 df = group_4
-
-            
-    #             # df = df[df['year'] == year_option]  # 년도에 따라 필터링
-
-    #             grouped = df.groupby('playlist_title').agg({
-    #                 'view_count':  'mean',
-    #                 'like_count' : 'mean',
-    #                 'comment_count': 'mean',
-    #                 'cost':'mean',
-    #                 'benefit':'mean',
-    #                 'seconds':'mean',
-    #                 'title': 'count'
-    #             }).round(0).reset_index()
-
-    #             st.markdown('''##### 영상길이별 통계값(평균) ''')
-    #             st.dataframe(grouped)
-
-    #             # st.dataframe(df[['playlist_title','publishedAt','title','view_count','like_count','seconds','ad_count','cost','benefit']])   
-
-    #         with col2:
-
-    #             from scipy.stats import *
-
-    #             # st.subheader('영상의 타이틀(고멤,이세돌)에 따라 평균 수익, 조회수, 좋아요, 댓글수에 차이가 있을까?')
-
-    #             option = st.selectbox('변수', ['view_count','reaction','benefit','cost'], key='t-test')                
-
-    #             group_w = group_wakta[option]
-    #             group_i = group_idol[option]
-
-    #             st.subheader(f'{option}')
-
-    #             st.markdown('''##### 왜도''')
-    #             st.markdown(f''' 
-    #                         * 고정멤버:{round(skew(group_w),3)}
-    #                         * 이세돌:{round(skew(group_i),3)}
-    #                         ''')
-
-
-    #             # 등분산성
-    #             statistic_l, pvalue_l = levene(group_w, group_i)
-    #             if pvalue_l < 0.05:
-    #                 statistic_m, pvalue_m = mannwhitneyu(group_w, group_i)                    
-    #                 st.markdown(f''' 
-    #                             ##### levene
-    #                             * statistic : {round(statistic_l,3)} , p-value: {round(pvalue_l,3)}
-    #                             * 등분산성이 가정되지 않아 비모수적인 방법을 이용합니다(mannwhitneyu)
-    #                             ''')
-    #                 if pvalue_m < 0.05:
-    #                     st.markdown(f'''
-    #                             ##### t-test
-    #                             * statistic : {round(statistic_m,3)} , p-value : {round(pvalue_m,3)}
-    #                             * mannwhitneyu 결과 평균 {option} 의 차이가 통계적으로 유의미합니다.
-    #                              ''')
-    #                 else:
-    #                     st.markdown(f'''mannwhitneyu 결과 두 그룹간 {option}은 통계적으로 큰 차이가 없습니다.
-    #                                 (* p-value : {round(pvalue_m,3)})
-    #                                 ''')
- 
-    #             else :
-    #                 # t-검정 실행
-    #                 statistic_t, pvalue_t = ttest_ind(group_w, group_i)
-    #                 st.markdown(f'''
-    #                             ##### levene
-    #                             * statistic : {round(statistic_l,3)} , p-value: {round(pvalue_l,3)}
-    #                             * 등분산성을 만족합니다 
-    #                             ''')
-    #                 if pvalue_t < 0.05:
-    #                     st.markdown(f'''
-    #                             ##### t-test
-    #                             * statistic : {round(statistic_t,3)} , p-value : {round(pvalue_t,3)}
-    #                             * t-test 결과 평균 {option} 의 차이가 통계적으로 유의미합니다.
-    #                              ''')
-    #                 else:
-    #                     st.markdown(f'''t-test 결과 두 그룹간 {option}은 통계적으로 큰 차이가 없습니다.
-    #                                 (* p-value : {round(pvalue_t,3)})
-    #                                 ''')
-
-
-                
-
-    #             # st.markdown(f'''
-    #             #             > #### T-test 결과
-    #             #             > * 등분산성을 만족하지 않으므로, 비모수적인 방법을 사용 했으며.
-    #             #             > * 영상의 길이별로 ,조회수, 댓글수, 수익면에서 통계적으로 유의미한 차이가 없었지만. 
-    #             #             > * 재생목록별로 평균 '좋아요' 수는 차이가 있었습니다. 
-    #             #             > * statistic : {round(statistic,3)} p_value : {round(p_value,3)}
-    #             #             > * 이세돌 영상의 '좋아요'가 평균적으로 더 높습니다.
-    #             #             ''')
 
 
     st.divider()        
@@ -1560,7 +1400,8 @@ if not data.empty:
         with st.container():
             col1,col2 = st.columns([1.2,2])
             with col1:
-                st.subheader('👀 2023 월별 HOT 고정멤버 TOP5 !!!')
+                st.subheader('🤡 월별 고정멤버 언급량 TOP5 ')
+                st.caption('올해 활약한 멤버 top5를 확인해보세요! ')
                 with st.form(key="waktaverse_aka_comment"):
                     c1,c2,c3 = st.columns([1,2,1])       
 
@@ -1590,7 +1431,7 @@ if not data.empty:
                     with c3:                    
                         gomem_img = get_member_images(gomem_aka)                        
                         st.session_state.gomem_img = gomem_img                        
-                        submit_search = st.form_submit_button("submit")
+                        submit_search = st.form_submit_button("확인")
 
 
 
@@ -1734,9 +1575,6 @@ if not data.empty:
                                 ] ,key="item_1")
 
 
-
-
-
             with col2:
                 st.markdown(f''' 
                             ### {gomem_option} 영상 더보기
@@ -1853,10 +1691,134 @@ if not data.empty:
             #     comment_data.to_csv(file_path, index=False, encoding='utf-8-sig')
             #     st.write('CSV 다운 완료')
 
-# ------ selectbox 재생목록 -------------------------------------------------------------------------------------------------------------------------------------
+    st.divider()
+
+    with st.container():
+        st.subheader('🎧(Youtube) 이세계아이돌 챌린지 영상 추세 ')            
+        st.caption(' Youtube 에서 "이세계아이돌"과 관련된 영상들이 얼마나 늘어나고 있는지 추세를 확인해 보았습니다.(검색했을 때 뜨는 기준)')
+        # if uploaded_file is not None:
+        isaedol = pd.read_csv('csv_data\이세계아이돌_video.csv')
+
+    # with st.form(key='isaedol youtube video count'):
+        # submit_search = st.form_submit_button('데이터 수집')
+        # if submit_search:
+        #     with st.spinner('영상수집중..'):
+        #         isaedol = get_video_isaeedol()
+        st.session_state.isaedol = isaedol
 
 
-    st.subheader("WAKTAVERSE Chart")
+        if hasattr(st.session_state, 'isaedol'):
+            isaedol = st.session_state.isaedol
+
+            isaedol['publishedAt'] = pd.to_datetime(isaedol['publishedAt']).dt.strftime('%Y-%m-%d')
+            isaedol['publishedAt'] = pd.to_datetime(isaedol['publishedAt'], format='%Y-%m-%d')
+            isaedol['year'] = isaedol['publishedAt'].dt.year 
+            isaedol['month'] = isaedol['publishedAt'].dt.month 
+
+            isaedol = isaedol[isaedol['year'] > 2021]
+
+            # isae_channel = ['아이네 INE','우왁굳의 돚거','비챤 VIichan','고세구 GOSEGU','왁타버스 WAKTAVERSE','비챤의 나랑놀아','징버거 JINGBURGER','주르르 JURURU','릴파의 꼬꼬','고세구의 좀 더']
+            # isaedol['channel'] = '그 외 채널'
+            # isaedol.loc[isaedol['channelTitle'].isin(isae_channel),'channel'] ='이세돌/우왁굳 채널'
+
+            isaedol['channel'] = '일반 영상'
+            isaedol.loc[isaedol['title'].str.contains('Cover|COVER|cover|커버|챌린지|challenge'),'channel'] ='커버 및 챌린지'
+
+            count_by_year_month = isaedol.groupby(['year', 'month','channel']).size()
+            count_df = count_by_year_month.reset_index(name='count')
+
+            total = isaedol.groupby(['year','month']).size()
+            total = total.reset_index(name='count')
+
+            channel1_df = count_df[count_df['channel'] == '일반 영상']
+            channel2_df = count_df[count_df['channel'] == '커버 및 챌린지']
+
+            # count 값을 한 행씩 더하기
+            channel1_df['cumulative_count'] = channel1_df['count'].cumsum() # 누적합 함수 cunsum()
+            channel2_df['cumulative_count'] = channel2_df['count'].cumsum()
+            total['cumulative_count'] = total['count'].cumsum()
+
+            channel1_df['date'] = channel1_df['year'].astype(str) + '-' + channel1_df['month'].astype(str)
+            channel2_df['date'] = channel2_df['year'].astype(str) + '-' + channel2_df['month'].astype(str)
+            total['date'] = total['year'].astype(str) + '-' + total['month'].astype(str)
+
+
+            total['prev_count'] = total['cumulative_count'].shift(1)
+
+            # 상승률 계산
+            total['growth_rate'] = round(((total['cumulative_count'] - total['prev_count']) / total['prev_count']) * 100,0)
+
+        col3, col4 = st.columns([2,1])
+        with col3:
+                # 함수 정의: 그래프 그리기
+                def plot_graph():
+                    # 데이터 설정
+                    x1 = total['date']
+                    y1 = total['cumulative_count']
+
+                    x2 = channel2_df['date']
+                    y2 = channel2_df['cumulative_count']
+
+                    x3 = channel1_df['date']
+                    y3 = channel1_df['cumulative_count']
+
+                    # 그래프의 크기 설정
+                    fig, ax = plt.subplots(figsize=(10, 5))
+                    fig.set_facecolor('white')
+                    ax.set_facecolor('white')
+
+                    # 그래프 그리기 (두 개의 라인 차트를 겹쳐서 표시)
+                    plt.plot(x1, y1, marker='o', markersize=3, linestyle='-', color='black', label='total')
+                    plt.plot(x2, y2, marker='o', markersize=3, linestyle='-', color='green', label='cover/challenge')
+                    plt.plot(x3, y3, marker='o', markersize=3, linestyle='-', color='gray', label='general video')
+
+                    # x 라벨과 y 라벨 설정
+                    plt.xlabel('year/month', fontsize=12)
+                    plt.ylabel('count',  fontsize=12)
+
+                    # 제목 설정
+                    plt.title('(Youtube hashtag) #IsaegayeIdol Charts', fontsize=15)
+
+                    # 세로선 추가
+                    plt.axvline(x='2023-6', color='#FF4646', linestyle='--', label='(Kakao Webtoon OST) RockDown/Another world ')
+                    plt.axvline(x='2023-8', color='#FF9614', linestyle='--', label='(3rd album) Kidding released')
+                    plt.axvline(x='2023-9', color='#FFD732', linestyle='--', label='Isaegye Festival')
+
+                    # 그래프 표시
+                    plt.legend()
+                    plt.xticks(rotation=45)
+                    plt.yticks()
+                    plt.tight_layout()
+
+                    st.pyplot(fig)  # Streamlit에 그래프 출력
+
+                plot_graph()
+
+        with col4:
+                st.markdown(''' 
+                            > 🔥이세계아이돌 HOT ISSUE 2023         
+
+                            * (2023.06~07) 카카오웹툰 OST 'RockDown, Another world' EP발매                         
+                            * (2023.08.18) 3집 앨범 'Kidding' 발매 
+                            * (2023.09.23) '이세계페스티벌' 이세계아이돌 첫공연
+                            * (2023.10.08) 서울 이세계아이돌 옥외 스크린 홍보
+                            ''')
+
+                st.markdown('''                                                        
+                            > 최근 4개월간 이세계아이돌 영상이 :red[209% 증가]했습니다. 
+                            
+                            **3집 "Kidding"** 을 발표하고 안무 챌린지를 시작하면서 :green[커버곡과 쇼츠폼의 안무챌린지 형태의 영상들]이 많이 늘어나고 있습니다. \n                            
+                            **이세계페스티벌 공연** 이후 이세계아이돌의 **무대영상, 페스티벌 VLOG 영상**을 통해 대중들에게 좀 더 다가가는 중입니다.
+                            
+                             ''')
+
+
+
+    st.divider()
+
+# ------ 왁타버스 차트 -------------------------------------------------------------------------------------------------------------------------------------
+
+    st.header("WAKTAVERSE Chart")
 
     with st.container(): 
         with st.form(key="WAKTAVERSE Chart submit"):
@@ -2014,8 +1976,8 @@ if not data.empty:
         with st.container():
             with elements(f"item{i + 1}"):
                 layout = [
-                    dashboard.Item("first_item", 0, 0, 2.5, 1.8, isDraggable=False),
-                    dashboard.Item("second_item", 2.5, 0, 7, 1.8, isDraggable=False),
+                    dashboard.Item("first_item", 0, 0, 2.7, 1.8, isDraggable=False),
+                    dashboard.Item("second_item", 2.7, 0, 7, 1.8, isDraggable=False),
                     dashboard.Item("third_item", 10, 0, 1.8, 1.8)
                 ]
                 with dashboard.Grid(layout):

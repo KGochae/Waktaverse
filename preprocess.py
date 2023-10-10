@@ -123,9 +123,11 @@ def hot_video(merged_df,playlist_titles, year, month):
     top3_music_week = weekly_hot_music.nlargest(3, 'view_like_sum')[hot_column]
 
     # month
+    total_diff['month_'] = total_diff['down_at'] - pd.offsets.MonthBegin(1)
+    total_diff['month_start'] = total_diff['month_'].dt.month.astype(str)
 
-    monthly_df = total_diff.groupby(['playlist_title', 'video_id', 'title','year','month'])[['view_count_diff','like_count_diff','view_like_sum']].sum().reset_index()
-    monthly_df = monthly_df[(monthly_df['year']== year) & (monthly_df['month']== month[1:2])] # 현재년도 현재 월
+    monthly_df = total_diff.groupby(['playlist_title', 'video_id', 'title','year','month_start'])[['view_count_diff','like_count_diff','view_like_sum']].sum().reset_index()
+    monthly_df = monthly_df[(monthly_df['year']== year) & (monthly_df['month_start'] == month)] # 현재년도 현재 월
 
     monthly_hot_enter = monthly_df[monthly_df['playlist_title'].isin(['WAKTAVERSE : GOMEM ', 'ISEGYE IDOL (예능)'])].drop_duplicates(subset='video_id')
     monthly_hot_music = monthly_df[monthly_df['playlist_title'].isin(["WAKTAVERSE : MUSIC", 'ISEGYE IDOL : MUSIC'])].drop_duplicates(subset='video_id')
