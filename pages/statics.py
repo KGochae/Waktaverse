@@ -36,43 +36,9 @@ css='''
 st.markdown(css, unsafe_allow_html=True)
 
 
-# ------------------- 각 영상의 playlist_title를 추가하기 위해서 playlist 별 영상과 최근 영상 두개의 방법으로 가져와야함 
-
-# with st.form(key='searchform_channel'):
-#     st.caption('''최근영상순 혹은 재생목록 별로 영상을 가져올 수 있습니다.''')
-#     sort_option_side = st.selectbox("select", ["재생목록별"], key='side_sort_option')
-#     submit_search = st.form_submit_button("검색")
-
-# # ------------------ 재생목록별로 영상을 수집할 때 (최근 재생목록이 아님, 50개까지 가능)
-
-# if submit_search and sort_option_side == "재생목록별": 
-#     channel_name = 'waktaverse'
-#     channel_Id= get_channel_id(api_key, channel_name)
-#     playlist, playlist_ids = get_playlist(channel_Id, api_key)
-#     video_df, video_ids = get_all_playlist_videos(playlist_ids, api_key)
-
-#     st.session_state.video_df = video_df
-#     st.session_state.playlist = playlist
-
-# if hasattr(st.session_state, 'video_df'):
-#     video_df = st.session_state.video_df
-
-#     video_df = video_df[video_df['playlistId'] != 'PLWTycz4el4t7ZCxkGYyekoP1iBxmOM4zZ']    
-#     video_df = video_df.drop_duplicates(subset='video_id', keep='first')
-#     st.write(video_df)
-
-# if hasattr(st.session_state, 'playlist'):
-#     playlist = st.session_state.playlist 
-#     wakta_pli = video_df.merge(playlist, on='playlistId', how='left')
-#     wakta_pli.to_csv('wakta_pli.csv', index=False)
-
-#     st.write(wakta_pli)
-
-
-
 
 # CSV 파일 업로드
-uploaded_file = pd.read_csv('csv_data\waktaverse_benefit.csv')
+uploaded_file = pd.read_csv('csv_data/waktaverse_benefit.csv')
 
 
 # 업로드된 파일이 있을 경우에만 처리
