@@ -113,7 +113,7 @@ def load_tokenizer():
 tokenizer = load_tokenizer()
 
 # ------------------------------------------------------------------------------------------------------------------------------------------- #
-
+# 단어사전
 gomem = ['뢴트게늄','뢴트','초코푸딩','루숙','해루석','해루숙','루석','캘칼', '캘리칼리', '캘리칼리데이빈슨',
         '도파민','파민','박사','소피아','춘피아','권민','쿤미옌','왁파고', '파고', '황파고','혜지','독고혜지',
         '비소','비밀소녀','비밀이모','히키킹','히키퀸','히키킹구','춘식','곽춘식','만두','김치만두번영택사스가','김치만두',
@@ -124,6 +124,7 @@ akadam = ['설리반','캡틴설리반','불곰','길버트','닌닌','긱긱','
           '셈이','수셈이','빅토리','토리','발렌타인','발렌','미발','아마최','아마데우스최']
  
 isedol = ['이세돌','이세계','챠니','챤이','비챤','릴파','르르땅','주르르','아잉네','아이네','세구','고세구','눈나구','지구즈','언니즈','막내즈','부산즈','개나리즈']
+
 
 def sentiment_predict(comment):
     words = [
@@ -329,40 +330,6 @@ def gomem_comment(df, col, year, month):
     most_aka = Counter(unified_tmp_aka).most_common(5)
 
     return most_gomem, most_aka
-
-
-# 월별 아카데미 언급량
-def akadamey_comment(df, col, year, month):
-    if month == 'all':
-        df = df[df['year'] == year]
-    else:
-        df = df[(df['year'] == year) & (df['month'] == month)]
-
-    all_tmp = [word for sublist in df[col] for word in sublist] # word = 리스트 속 ['단어들']
-
-    aka_word = {   
-        "미미짱짱세용" : ['미미짱짱세용','세용'],
-        "닌닌" : ['닌닌'],
-        "젠투" : ['젠투','젠크리트'],
-        "수셈이" : ['셈이','수셈이'],
-        "아마최" : ['아마데우스최','아마최'],
-        "진희" : ['진희','지니'],
-        "수셈이": ['셈이','수셈이'],
-        "발렌타인" : ['발렌','발렌타인','미발'],
-        "시리안": ['시리안'],
-        "길버트":['길버트'],
-        "빅토리":['빅토리'],
-        "설리반":['설리반']
-    }
-    # 통일된 단어들만 추출 (gomem_word에 있는 단어들만 포함)
-
-    unified_tmp = unify_tmp(all_tmp, aka_word)
-    unified_tmp = [word for word in unified_tmp if word in aka_word]
-    
-    unified_tmp = Counter(unified_tmp)
-    most_gomem = unified_tmp.most_common(5)
-
-    return most_gomem
 
 
 # 최종 실행함수
