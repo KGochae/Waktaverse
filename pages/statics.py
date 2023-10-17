@@ -36,16 +36,11 @@ css='''
 st.markdown(css, unsafe_allow_html=True)
 
 
+uploaded_file = []
 
-# CSV 파일 업로드
-uploaded_file = pd.read_csv('csv_data/waktaverse_benefit.csv')
-
-
-# 업로드된 파일이 있을 경우에만 처리
-if uploaded_file is not None:
-    # 업로드된 CSV 파일을 pandas DataFrame으로 읽기
-    df = pd.read_csv(uploaded_file)
-    df = benfit_cal(df)
+if uploaded_file is None:
+    uploaded_file = pd.read_csv('csv_data/waktaverse_benefit.csv')
+    df = benfit_cal(uploaded_file)
     df = df.sort_values(by='benefit', ascending = False).reset_index()
     # df = df[~df['playlist_title'].str.contains('MUSIC')]
     # df = df[df['channel'] == 'waktaverse']
