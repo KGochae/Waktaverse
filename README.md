@@ -1,5 +1,6 @@
-Youtube channel Waktaverse statics (정리중..)
+# Youtube channel Waktaverse DASHBOARD
 
+구경가기👉 [WAKTAVERSE DASHBOARD](https://waktaverse-dashboard-test.streamlit.app/)
 
 # TOOL
 * Python : Data Preprocessing, EDA, NLP modeling
