@@ -51,8 +51,7 @@ client = bigquery.Client(credentials=credentials)
 
 # ------------------------------GOOGLE CLOUD STORAGE------------------------------------------------ #
 
-# credentials_file = 'C:\scraping\my-project-72981-c4ea0ddcafb9.json'
-main_bucket = 'waktaverse_test'
+main_bucket = 'waktaverse'
 comment_bucket = 'waktaverse_comment'
 
 
@@ -83,13 +82,6 @@ def load_comment():
     csv_data = blob.download_as_string()
     df = pd.read_csv(io.StringIO(csv_data.decode('utf-8')))
 
-    # df['date'] = pd.to_datetime(df['date'], format="%Y-%m-%dT%H:%M:%S%z", errors='coerce')
-    # # NaN 값이 있는 행을 제거
-    # df = df.dropna(subset=['date'])
-    # # year 및 month 컬럼 생성
-    # df['year'] = df['date'].dt.year
-    # df['month'] = df['date'].dt.month
-
     df['tmp'] = df['tmp'].apply(ast.literal_eval) # 토큰화된 값들 이 [] 안에있는데, csv 로 불러오면 '[' , ']' 또한 문자열로 바뀌어버린다(?). 리스트로 변환해야함
 
     return df
@@ -102,17 +94,14 @@ def load_data():
     return data, comment_data
 
 data, comment_data = load_data()
-# -------------------------------------------------------------------------------------------------- #
 
-
-# CSV 파일 업로드
-uploaded_file = st.sidebar.file_uploader('왁타버스 수익계산용 csv', type=['csv'])
 
 if not data.empty:
     # 일부 전처리
     merged_df, playlist_titles, subscribe, subscribe_week = data_diff(data)
     total_diff, top3_videos,top3_music, top3_videos_week, top3_music_week, top3_videos_month, top3_music_month = hot_video(merged_df,playlist_titles, year, month)
-# -------------------------------------------------------- MAIN CONTENTS(재생목록, 구독자, hot_video) ------------------------------------------------------------- #
+
+    # -------------------------------------------------------- MAIN CONTENTS(재생목록, 구독자, hot_video) ------------------------------------------------------------- #
 
     with st.container():  ### 📊 재생목록 조회수 증가량
         col1,col2,_= st.columns([4,2,7])
@@ -2213,88 +2202,3 @@ else:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                        # nivo.Line(
-                        #     data= [diff_nivo_data[i]],
-                        #     margin={'top': 50, 'right': 100, 'bottom': 40, 'left': 100},
-                        #     xScale={'type': 'point'},
-                        #     yScale={
-                        #         'type': 'linear',
-                        #         'min': 0,
-                        #         'max': 'auto',
-                        #         'stacked': True,
-                        #         'reverse': False
-                        #     },
-                        #     yFormat=' >-.2s',
-                        #     # curve="catmullRom",
-                        #     axisTop=None,
-                        #     axisRight=None,
-                        #     axisBottom=
-                        #     {
-                        #         'tickCount': 5,
-                        #         'tickValues': None,  # X축 값들 사이에 구분선을 그리기 위해 설정
-                        #         'tickSize': 0,
-                        #         'tickPadding': 5,
-                        #         'tickRotation': 0,
-                        #         'legendOffset': 36,
-                        #         'legendPosition': 'middle',
-                        #     },
-                        #     axisLeft={
-                        #         'tickSize': 4,
-                        #         'tickPadding': 10,
-                        #         'tickRotation': 0,
-                        #         'legend': '조회수',
-                        #         'legendOffset': -70,
-                        #         'legendPosition': 'middle'
-                        #     },
-                        #     colors= {'scheme': 'accent'},
-                        #     enableGridX = False,
-                        #     enableGridY = False,
-                        #     lineWidth=5,
-                        #     pointSize=5,
-                        #     pointColor='white',
-                        #     pointBorderWidth=1,
-                        #     pointBorderColor={'from': 'serieColor'},
-                        #     pointLabelYOffset=-12,
-                        #     useMesh=True,
-                        
-                        #     theme={
-                        #             # "background": "#171717", # #262730 #100F0F
-                        #             "textColor": "white",
-                        #             "tooltip": {
-                        #                 "container": {
-                        #                     "background": "#3a3c4a",
-                        #                     "color": "white",
-                        #                 }
-                        #             }
-                        #         },
-                        #     animate= False
-
-                        # )
-
-
-# with elements("multiple_children"):
-
-#     mui.Button(
-#         mui.icon.ArrowDropUp)
-
-
-
-
-# with elements("hot_viddeo"):
-#     layout=[
-#            dashboard.Item("item_1", 0, 0, 2, 1.5, isDraggable=True, isResizable=False ),
-#     ]
