@@ -36,10 +36,10 @@ css='''
 st.markdown(css, unsafe_allow_html=True)
 
 
-uploaded_file = pd.DataFrame()
 
-if uploaded_file is None:
-    uploaded_file = pd.read_csv('csv_data/waktaverse_benefit.csv')
+uploaded_file = pd.read_csv('csv_data/waktaverse_benefit.csv')
+
+if uploaded_file is not None:
     df = benfit_cal(uploaded_file)
     df = df.sort_values(by='benefit', ascending = False).reset_index()
     # df = df[~df['playlist_title'].str.contains('MUSIC')]
