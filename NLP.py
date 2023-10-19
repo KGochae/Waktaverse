@@ -381,6 +381,7 @@ def gomem_video(df, gomem):
   df['tmp'] = df['tmp'].apply(lambda x: unify_tmp(x, word_rules))
   # '고멤' 단어가 언급된 빈도를 계산하여 데이터프레임에 추가
   df['cnt'] = df['tmp'].apply(lambda x: count_word(x, gomem))
+  df = df.groupby(['video_id','title'])['cnt'].sum().reset_index()
   gomem_hot_video = df[df['cnt'] == df['cnt']].nlargest(5,'cnt')[['video_id','title','cnt']]
 
   # 결과 출력
