@@ -11,7 +11,6 @@ from google.oauth2 import service_account
 
 from streamlit_elements import dashboard
 from streamlit_elements import nivo, elements, mui, media
-# from st_files_connection import FilesConnection # ENCODING 에러가 자꾸 난다.
 
 # 문자열을 파이썬 리스트로 변환하기 위한 모듈
 import ast 
@@ -329,29 +328,6 @@ if not data.empty:
                                             # arcLabelsTextColor={ "from": 'white', "modifiers": [['brighter',0.5]] },
                                             arcLabelsTextColor="white",
                                             arcLabelsSkipAngle={10},
-                                            # legends=[
-                                            #     {
-                                            #         "anchor": "top-right",
-                                            #         "direction": "column",
-                                            #         "translateX": -50,
-                                            #         "translateY": 0,
-                                            #         "itemWidth": 8,
-                                            #         "itemHeight": 15,
-                                            #         "itemTextColor": "white",
-                                            #         "symbolSize": 12,
-                                            #         "symbolShape": "circle",
-                                            #         "effects": [
-                                            #             {
-                                            #                 "on": "hover",
-                                            #                 "style": {
-                                            #                     "itemTextColor": "white",
-                                            #                     'itemBackground': 'rgba(0, 0, 0, .03)',
-                                            #                     'itemOpacity': 1
-                                            #                 }
-                                            #             }
-                                            #         ]
-                                            #     }
-                                            # ],
                                             theme={
                                                 # "background": "#141414",
                                                 "textColor": "white",
@@ -1098,15 +1074,6 @@ if not data.empty:
                                             curve="cardinal",
                                             axisRight=None,
                                             axisBottom=None,
-                                            # {
-                                            #     'tickCount': 5,
-                                            #     'tickValues': tickValues,  # X축 값들 사이에 구분선을 그리기 위해 설정
-                                            #     'tickSize': 0,
-                                            #     'tickPadding': 5,
-                                            #     'tickRotation': 0,
-                                            #     'legendOffset': 36,
-                                            #     'legendPosition': 'middle',
-                                            # },
                                             axisLeft=None,
 
                                             colors= {'scheme': 'red_yellow_blue'},
@@ -1651,33 +1618,10 @@ if not data.empty:
                                                 ,key=f'item_{i}',sx={"borderRadius": '23px'})
 
 
-                            # if len(gomem_hot_video) > 0 :
-                            #     media.Player(url=f"https://youtu.be/{gomem_hot_video['video_id'].iloc[0]}"
-                            #                     ,controls=True, playing=True, volume = 0.2 , light=True, width='100%', height='100%',
-                            #                     key='item_1')                                                                                                                           
 
-                            # if len(gomem_hot_video) > 1 :
-                            #     media.Player(url=f"https://youtu.be/{gomem_hot_video['video_id'].iloc[1]}"
-                            #                     ,controls=True, playing=True, volume = 0.2 , light=True, width='100%', height='100%',
-                            #                     key='item_2')                                                                                                                           
-    
-                            # if len(gomem_hot_video) > 2 :
-                            #     media.Player(url=f"https://youtu.be/{gomem_hot_video['video_id'].iloc[2]}"
-                            #                     ,controls=True, playing=True, volume = 0.2 , light=True, width='100%', height='100%',
-                            #                     key='item_3')                                                                                                                           
-    
-                            # if len(gomem_hot_video) > 3 :
-                            #     media.Player(url=f"https://youtu.be/{gomem_hot_video['video_id'].iloc[3]}"
-                            #                     ,controls=True, playing=True, volume = 0.2 , light=True, width='100%', height='100%',
-                            #                     key='item_4')                               
-                    
-                # st.divider()
-                    
 
-            # if st.button('Download CSV'):                
-            #     file_path = f'C:/scraping/csv_data/gomem_tmp_20230910.csv'
-            #     comment_data.to_csv(file_path, index=False, encoding='utf-8-sig')
-            #     st.write('CSV 다운 완료')
+
+# ---------------------------------------------------------- 이세돌 3집 컴백 챌린지 영상 추세----------------------------------------------------------------------------------- #    
 
     st.divider()
 
