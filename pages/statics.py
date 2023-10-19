@@ -36,7 +36,7 @@ css='''
 st.markdown(css, unsafe_allow_html=True)
 
 
-uploaded_file = []
+uploaded_file = pd.DataFrame()
 
 if uploaded_file is None:
     uploaded_file = pd.read_csv('csv_data/waktaverse_benefit.csv')
