@@ -1,14 +1,14 @@
 # Youtube channel Waktaverse DASHBOARD
 
-구경가기👉 [WAKTAVERSE DASHBOARD](https://waktaverse-dashboard-test.streamlit.app/)
+## 구경가기👉 [WAKTAVERSE DASHBOARD](https://waktaverse-dashboard-test.streamlit.app/)
 
-# TOOL
+# 🔧TOOL
 * Python : Data Preprocessing, EDA, NLP modeling
 * Streamlit : visualize, app
 * API : Google Cloud Platform(Youtube API V3)
 
 
-# 디렉토리 
+# 📁 디렉토리 
 
 ```bash
 ├── 📁.streamlit
@@ -30,7 +30,6 @@
 ├── requirements.txt
 ├── youtube_main.py ---- # 대시보드 메인 페이지
 ├── yout.py ------------ # youtube API V3 관련 함수
-├── preprocess.py ------ # 데이터 전처리에 관한 py
 └──
 ```
 
@@ -166,6 +165,8 @@
 
 시청자들이 해당영상을 어떻게 보고있는지 파악하는것에 더 나아가 WATKAVERSE 채널에 주로 등장하는 멤버들중 어떤 멤버들이 해당영상에서 활약하고 있는지 그리고 시청자들이 남긴 댓글의 youtube time tag 데이터를 활용해 시청자들이 가장 재밌게본 구간을 요약해보았습니다.
 
+(유튜브 api를 이용하여 댓글을 수집하며 할당량이 초과된 경우, error 가 발생할 수 있습니다😅)
+
 ![image](https://github.com/KGochae/Waktaverse/assets/86241587/33794436-d3e1-4adf-9dc5-3d5272052fbd)
 
 > ##### TOP3 영상 반응 요약  
@@ -201,4 +202,3 @@
 
 ![image](https://github.com/KGochae/Waktaverse/assets/86241587/ac719107-3761-4724-9a09-dede51a737c1)
 
- 
