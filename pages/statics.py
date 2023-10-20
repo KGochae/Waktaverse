@@ -492,45 +492,6 @@ if uploaded_file is not None:
                                 > * 비용은 편집비용만 고려하였으며 30분이상인 경우 풀영상으로 파악하여 비용을 100,000원으로 고정                                                                                                       
                                 ''')
                 
-                # st.markdown('''
-                # ## 2020년 Point ✔️  
-                #     - 수익면, 시청자반응, 조회수 총3개의 주제로 측정해 보았습니다.
-                # ----
-                # ##### 혜자 컨텐츠 - 합방,시리즈,기타 컨텐츠  + VRchat
-                # > 시청자반응(좋아요+댓글) 
-
-                # * 과거 왁카데미에 더나아가, 컨셉을 갖고있는 '멤버'를 본격적으로 뽑기 시작함으로써 `합방` 시너지가 굉장히 높아졌다. (물론, 컨셉이 없어도된다.)
-                # * 사실상 `본캐와 부캐`라는 컨텐츠를 2020년 부터 시작한것이다. 이 사람들이 실제 뭐하는 사람인지 몰라서 더 재밌다. 그래서 컨텐츠에 몰입하게 만드는 효과가 있다.
-                # * 주로 `Vrchat` 을 이용한 컨텐츠이며 대표적으로 '상황극'이 있다.
-                            
-                                        
-                # ----
-                # ##### 가성비 부분 - 먹방/캠방 
-                # * `먹방/캠방` 의 경우 주컨텐츠인 `마크, vrchat, 노가리`와 비교했을 때  모두 :blue[상위권]에 속한다.
-                # * 평균 조회수를 비교했을 때  
-                #             \
-                # vrchat 👉 먹방/캠방 👉 노가리 👉 마크 순으로 무려 :blue[2위]이며
-                # * 평균 좋아요(16,298) :blue[2위], 평균 댓글수(2,153)는 :blue[1위] 이다.
-                # * 일단 보이지 않던게 실제 화면에 보이니 반응이 좋을 수 밖에 없다. \
-                #     (우왁굳이 캠을켜? 맛있다.
-                            
-
-                # ---- ''')
-            # with tab2:
-            #     st.markdown(''' 
-            #                 ##### ✔️ 연도별 영상개수  
-            #                 > " 점점 커지는 서브채널의 비중 "                             
-            #                 > * WAKTAVERSE:예능, ISGYE IDOL:예능, WAKTAVERSE:MUSIC  서브채널 영상들이 눈에 띄게 늘어나고 있습니다. 
-
-            #                 ##### ✔️ 본채널 (우왁굳의 게임방송) 
-            #                 * 추정이익(합) 🥇Vrchat🥈마크 🥉합방기타컨텐츠
-            #                 * 시청자반응(합) 🥇Shorts 🥈Vrchat 🥉마크
-
-            #                 ##### ✔️ 서브채널 (Waktaverse)
-            #                 * 추정이익(합) 🥇ISGYE IDOL:예능 🥈WAKTAVERSE:예능 🥉합방기타컨텐츠
-            #                 * 시청자반응(합) 🥇WAKTAVERSE:MUSIC 🥈ISGYE IDOL:예능 🥉WAKTAVERSE:예능
-
-            #                 ''')
 
     st.divider()
     
@@ -586,7 +547,7 @@ if uploaded_file is not None:
         
         summary_benefit = ols('benefit ~ seconds + reaction  + pli_ISEGYE_IDOL_예능 + pli_WAKTAVERSE_예능 + pli_shorts + pli_vrchat + pli_노가리 + pli_똥겜 + pli_마크 + pli_합방기타컨텐츠', df_encoded).fit().summary()
         summary_reaction= ols('reaction ~ seconds + benefit  + pli_ISEGYE_IDOL_예능 + pli_WAKTAVERSE_MUSIC + pli_WAKTAVERSE_예능 + pli_shorts + pli_똥겜 + pli_노가리', df_encoded).fit().summary()
-        summary_react_perview= ols('diff_react_per_view ~ seconds + benefit  + pli_WAKTAVERSE_MUSIC + pli_WAKTAVERSE_예능 + pli_shorts + pli_합방기타컨텐츠 + pli_vrchat + pli_마크', df_encoded).fit().summary()
+        # summary_react_perview= ols('diff_react_per_view ~ seconds + benefit  + pli_WAKTAVERSE_MUSIC + pli_WAKTAVERSE_예능 + pli_shorts + pli_합방기타컨텐츠 + pli_vrchat + pli_마크', df_encoded).fit().summary()
 
 
         def reg(summary_df):
@@ -607,7 +568,7 @@ if uploaded_file is not None:
         
         b_statistic_df, b_summary_df, b_r_squared = reg(summary_benefit)
         r_statistic_df, r_summary_df, r_r_squared = reg(summary_reaction)
-        d_statistic_df, d_summary_df, d_r_squared = reg(summary_react_perview)
+        # d_statistic_df, d_summary_df, d_r_squared = reg(summary_react_perview)
 
 
         st.markdown(f'''
