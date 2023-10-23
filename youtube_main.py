@@ -76,7 +76,7 @@ def load_maindata():
 def load_comment():
     client = storage.Client(credentials=credentials)
     bucket = client.bucket(comment_bucket)
-    blob = bucket.blob('gomem_tmp_20230926.csv')
+    blob = bucket.blob('gomem_tmp_20231023.csv')
 
     csv_data = blob.download_as_string()
     df = pd.read_csv(io.StringIO(csv_data.decode('utf-8')))
