@@ -95,6 +95,13 @@ def load_data():
 data, comment_data = load_data()
 
 
+with st.container():
+    st.markdown(''' 
+
+                # WATKAVERSE DASHBOARD
+
+                ''')
+
 if not data.empty:
     # 일부 전처리
     merged_df, playlist_titles, subscribe, subscribe_week = data_diff(data)
