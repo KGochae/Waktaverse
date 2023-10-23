@@ -185,19 +185,6 @@ if not data.empty:
 
 
 
-        # with col3:
-        #         sort_option_count = st.selectbox('______' , ['일별','주간','월간'], key='sort_option_playlist')
-
-        #         if sort_option_count == '일별':
-        #             playlist_view_count_data = diff
-
-        #         elif sort_option_count == '주간':
-        #             playlist_view_count_data = weekly_diff
-
-        #         elif sort_option_count == '월간':
-        #             playlist_view_count_data = weekly_diff
-
-
     with st.container(): ### 재생목록별 조회수 증가량
         with st.container():       
                 with elements("playlist_line_chart"):
@@ -284,7 +271,7 @@ if not data.empty:
                             mui.Box( # today view count
                                 children = [
                                     mui.Typography(
-                                        "  View count diff ",
+                                        " Today View Count",
                                         variant="body2",
                                         sx={ # "fontFamily":"Pretendard Variable",
                                             "font-size": "24px",
@@ -346,7 +333,7 @@ if not data.empty:
                             mui.Box( # subscribe
                                 children = [
                                     mui.Typography(
-                                        " subscribe ",
+                                        " Total Subscribe ",
                                         variant="body2",
                                         sx={"fontFamily":"Pretendard Variable",
                                             "font-size": "24px",
@@ -365,9 +352,16 @@ if not data.empty:
                                     ),
                                     mui.Divider(),
 
+                                    mui.Typography(
+                                        '전일 대비 증가량',
+                                         variant="body2",
+                                         color="text.secondary",
+                                         sx={'pt':2}
+                                    ),
+                                    
                                     nivo.Line(
                                         data =subscribe_n,
-                                        margin={'top': 50, 'right': 10, 'bottom': 120, 'left': 10},
+                                        margin={'top': 20, 'right': 20, 'bottom': 150, 'left': 20},
                                         xScale={'type': 'point'},
                                         yScale={
                                             'type': 'linear',
@@ -430,7 +424,7 @@ if not data.empty:
                     st.markdown('''
                         ### 🔥뜨는 컨텐츠 TOP3 (예능/노래)
                         ''')
-                    # st.caption('몇주동안, 몇일동안 상위권 등수를 유지했는지 기록도해보자')
+                    # st.caption('몇주동안, 몇일동안 상위권 등수를 유지했는지 기록해보자')
                 with col2_1:
                         sort_option_count = st.selectbox('__' , ['Today',f'주간 ({week_start})',f'월간 ({month}월)'], key='sort_option_hot')
 
