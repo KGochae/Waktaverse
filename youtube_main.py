@@ -333,7 +333,7 @@ if not data.empty:
                             mui.Box( # subscribe
                                 children = [
                                     mui.Typography(
-                                        " Total Subscribe ",
+                                        " Subscribe ",
                                         variant="body2",
                                         sx={"fontFamily":"Pretendard Variable",
                                             "font-size": "24px",
