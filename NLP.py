@@ -340,7 +340,7 @@ def monthly_gomem(df):
     gomem_chart = {}
 
   # 각 월별 데이터 계산 및 저장
-    for month in range(1, 10):
+    for month in range(1, 11):
         most_gomem, most_aka = gomem_comment(df, 'tmp', 2023, month)
         most_common_words = most_gomem + most_aka
         month_data = [{'id': gomem_name, 'count': count} for gomem_name, count in most_common_words]
@@ -388,40 +388,4 @@ def gomem_video(df, gomem):
   return gomem_hot_video
 
 
-def gomem_tmp(df):
-    df['comment'] = df['comment'].str.replace("[^ㄱ-ㅎㅏ-ㅣ가-힣 ]"," ")
-    df['comment'].replace('', np.nan, inplace=True)  #비어 있는 행은 null값으로 처리
-    df.dropna(how='any', inplace=True)  #null 값 제거
-
-    words = [
-        (['우왁굳','왁굳','영택'],'Noun'), (['천양','대월향'],'Noun'),
-        # 이세돌, 고멤,아카
-        (isedol,'Noun'), (gomem,'Noun'),(akadam,'Noun'),
-
-        # 그외 단어들
-        ('헨타이','Noun'), ('튽훈','Noun'),('가성비','Noun'),
-        (['레전드','레게노'],'Noun'), (['아웃트로','인트로'],'Noun'),(['브이알챗','브이알'],'Noun'),(['수듄','고로시','뇌절'],'Noun'),(['킹아','킹애','존맛탱'],'Adjective'),
-        (['상현','하현'],'Noun'), (['고멤','고정멤버','아카데미'],'Noun'), (['고단씨','준구구','준99'],'Noun'),(['십덕','씹덕','오타쿠'],'Noun'),
-        (['ㄱㅇㅇ','ㄹㄱㄴ','ㄺㄴ','ㅅㅌㅊ','ㅎㅌㅊ','ㅆㅅㅌㅊ','ㅆㅎㅌㅊ'],'KoreanParticle'),
-        (['눕프로해커','눕프핵','마크','마인크래프트','왁파트','똥겜'],'Noun'), ('상황극','Noun'), ('족마신','Noun')
-            ]
-
-    for word in words:
-        name, poomsa = word
-        twi.add_dictionary(name, poomsa)
-
-        stopwords = ['의', '가', '은', '는','이', '과', '도', '를', '으로', '자', '에', '하고', '세요', '니다', '입니다',
-                    '하다', '을', '이다', '다', '것', '로', '에서', '그', '인', '서', '네요', '음', '임','랑',
-                    '게', '요', '에게', '엔', '이고', '거', '예요', '이에요', '어요', '어서', '여요', '하여']
-
-    text_token = []
-    for sentence in tqdm(df['comment']):
-        tmp = []
-        tmp = twi.morphs(sentence, stem=True, norm=True)  #토큰화
-        tmp = [word for word in tmp if not word in stopwords]  #불용어 제거
-        text_token.append(tmp)
-
-    df['tmp'] = text_token
-    
-    return df
 
