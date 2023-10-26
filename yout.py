@@ -25,11 +25,6 @@ from dotenv import load_dotenv
 from PIL import Image, ImageDraw
 
 # -------------------------------------------------------- yotube api v3 ------------------------------------------------------------- #
-# api_key = os.getenv('api_key')
-# DEVELOPER_KEY = api_key
-# YOUTUBE_API_SERVICE_NAME = "youtube"
-# YOUTUBE_API_VERSION = "v3"
-
 
 DEVELOPER_KEY = (
     # Very Important Point
