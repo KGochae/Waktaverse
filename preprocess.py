@@ -12,6 +12,10 @@ month = str(now.strftime('%m'))
 year = str(now.strftime('%Y'))
 
 
+
+# ----------------------------------------------------- 재생목록/구독자 증가량 -------------------------------------------------------------------------- #
+
+
 @st.cache_data
 def data_diff (data):
     # data = pd.concat(dfs) if dfs else ''
@@ -64,20 +68,11 @@ def data_diff (data):
  
     return data, playlist_titles, subscribe, subscribe_week
 
-@st.cache_data
-def total_diff(merged_df,playlist_titles):
-    # 재생목록별 조회수, 구독자
-    total_diff = pd.DataFrame()    
-    for playlist_title in playlist_titles:
-        test_df = merged_df[merged_df['playlist_title'] == playlist_title].copy()
-        total_diff = pd.concat([total_diff, test_df])
 
-    total_diff.loc[total_diff['playlist_title'].str.contains('YOUTUBE|이세여고|OFFICIAL'), 'playlist_title'] = 'ISEGYE IDOL (예능)' # 이세돌 카테고리 통합
-    total_diff.loc[total_diff['playlist_title'].str.contains('MIDDLE|GOMEM'),'playlist_title'] = 'WAKTAVERSE : GOMEM ' 
-    total_diff.loc[total_diff['video_id'].isin(['JY-gJkMuJ94', 'fgSXAKsq-Vo']), 'playlist_title'] = 'ISEGYE IDOL : MUSIC'
 
-    total_diff = total_diff[total_diff['playlist_title'] != 'ALL : MUSIC']
-    total_diff = total_diff.drop_duplicates(subset=['down_at', 'video_id'])
+
+
+# ------------------------------------------------------일별,주별,월별 hot video -------------------------------------------------------------------------- #
 
 @st.cache_data
 def hot_video(merged_df,playlist_titles, year, month): 
