@@ -1759,7 +1759,7 @@ if not data.empty:
             with col0:
                 year_option = st.selectbox('Year',['2023','2022','2021','ALL'], key='year')
             with col1:
-                month_option = st.selectbox('Month', ['9','8','7','6','5','4','3','2','1','ALL',], key='month')
+                month_option = st.selectbox('Month', ['11','10','9','8','7','6','5','4','3','2','1','ALL',], key='month')
             with col2:
                 list_option = st.selectbox('재생목록', options = playlist_titles, key='pli')
             with col3:
