@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from statsmodels.formula.api import ols
 
-from yout import get_all_playlist_videos_wak,get_channel_id,get_playlist,get_all_playlist_videos,video_duration
+from yout import get_all_playlist_videos_wak, get_channel_id, get_playlist, get_all_playlist_videos, video_duration
 from googleapiclient.discovery import build
 import plotly.express as px
 
@@ -42,9 +42,8 @@ uploaded_file = pd.read_csv('csv_data/waktaverse_benefit.csv')
 if uploaded_file is not None:
     df = benfit_cal(uploaded_file)
     df = df.sort_values(by='benefit', ascending = False).reset_index()
-    # df = df[~df['playlist_title'].str.contains('MUSIC')]
-    # df = df[df['channel'] == 'waktaverse']
-
+   
+    # 재생목록 전처리
     df.loc[df['playlist_title'].str.contains('연공전|먹방|캠방|핫클립|합방'), 'playlist_title'] = '합방기타컨텐츠'      
     df.loc[df['playlist_title'].str.contains('vr'),'playlist_title'] = 'vrchat'  
     df.loc[df['playlist_title'].str.contains('YOUTUBE|이세여고|OFFICIAL'), 'playlist_title'] = 'ISEGYE_IDOL_예능' # 이세돌 카테고리 통합
@@ -54,7 +53,6 @@ if uploaded_file is not None:
     df = df[df['playlist_title'].str.contains('MUSIC|마크|똥겜|컨텐츠|노가리|예능|WAKTAVERSE|shorts|vrchat|시리즈')]
 
 
-    # df = df.drop('id',axis=1)
     df['publishedAt'] = pd.to_datetime(df['publishedAt'])
     df['date'] = df['publishedAt'].dt.date
     df['year'] = df['publishedAt'].dt.year
@@ -97,6 +95,7 @@ if uploaded_file is not None:
                         ''' ) 
     st.divider()
 
+    # 업로드 시간, 상관분석 등 시각화 
     with st.container():
         st.header('데이터 탐색')
         col1,_,col2 = st.columns([1.5,0.2,1.5])
@@ -177,22 +176,9 @@ if uploaded_file is not None:
                 plt.ylabel('Features')
 
                 st.pyplot(fig)
-    # # view_count 열의 데이터를 리스트로 변환
-    # view_counts = filtered_df['view_count'].tolist()
-
-    # # 히스토그램 그리기
-    # fig = px.histogram(filtered_df, x='view_count', nbins=100, labels={'view_count': 'View Count'},
-    #                 title='Distribution of View Count')
-
-    # # 그래프를 streamlit에 표시
-    # st.plotly_chart(fig)
-    # nivo 차트를 위한 데이터 가공
-
-        
-    # st.write(nivo_pie[0])
-        
 
 
+    # 컨텐츠별 조회수/이익/좋아요 비율 시각화    
     with st.container():
         col1,col2 = st.columns([1.5,1.5])
         with col1:
@@ -280,7 +266,6 @@ if uploaded_file is not None:
 
                 nivo_pie.append(result_list)
 
-# --------------------------------------------------------------------------------------------------------------- #
 
             all_df = df.groupby(['year','playlist_title']).agg({
                 'view_count': ['sum', 'mean'],
@@ -303,12 +288,9 @@ if uploaded_file is not None:
                 all_df[new_column_name] = round((all_df[column] / all_df[column].sum()) * 100, 0)
 
 
-            # 데이터프레임을 피벗하여 원하는 형식으로 변환
             pivot_df = all_df.pivot(index="year", columns="playlist_title", values=values).reset_index()
-            # 결과를 리스트 형식으로 변환
             pivot_nivo = pivot_df.to_dict(orient="records")
 
-            # 결과 출력
             for item in pivot_nivo:
                 item["year"] = int(item["year"])
 
@@ -388,87 +370,6 @@ if uploaded_file is not None:
                             ),key="items1" 
                         )
               
-                    # mui.Box(                            
-                    #         children=[
-                    #         mui.Typography(f' 연도별 {static_option}',
-                    #                        variant="h2",
-                    #                        sx={'font-size':'24px','text-align':'center','fontWeight': '500'}),
-                    #         nivo.Bar(
-                    #             data=pivot_nivo,
-                    #             keys=[
-                    #                 "ISEGYE IDOL : 예능",
-                    #                 "WAKTAVERSE : MUSIC",
-                    #                 "WAKTAVERSE : 예능",
-                    #                 "shorts",
-                    #                 "vrchat",
-                    #                 "노가리",
-                    #                 "똥겜",
-                    #                 "마크",
-                    #                 "합방,시리즈,기타 컨텐츠",
-                    #                 ],# 막대 그래프의 그룹을 구분하는 속성
-                    #             indexBy="year",  # x축에 표시할 속성
-
-                    #             margin={"top": 20, "right": 30, "bottom": 80, "left": 100},
-                    #             padding={0.5},
-                    #             innerPadding={2},
-                    #             layout="horizontal",
-                    #             sortByValue=True,
-                    #             valueScale={ "type" : 'linear' },
-                    #             indexScale={ "type": 'band', "round": 'true'},
-                    #             borderRadius={0},
-                    #             colors={ 'scheme': 'pastel1' },
-                    #             innerRadius=0,
-                    #             padAngle=0.1,
-                    #             activeOuterRadiusOffset=8,
-                    #             enableGridX= True,
-                    #             axisLeft=True,  # Y축 단위 
-                        
-                    #             labelSkipWidth={40},
-                    #             labelSkipHeight={20},
-
-                    #             legends=[
-                    #                 {
-                    #                 'anchor': 'top-right',
-                    #                 'direction': 'column',
-                    #                 'justify': False,
-                    #                 'translateX': -70,
-                    #                 # 'translateY': -200,
-                    #                 'itemsSpacing': 0,
-                    #                 'itemDirection': 'left-to-right',
-                    #                 'itemWidth': 80,
-                    #                 'itemHeight': 15,
-                    #                 'itemOpacity': 0.75,
-                    #                 'symbolSize': 12,
-                    #                 'symbolShape': 'circle',
-                    #                 # 'symbolBorderColor': 'rgba(0, 0, 0, .5)',
-                    #                 'effects': [
-                    #                         {
-                    #                         'on': 'hover',
-                    #                         'style': {
-                    #                             'itemBackground': 'rgba(0, 0, 0, .03)',
-                    #                             'itemOpacity': 1
-                    #                             }
-                    #                         }
-                    #                     ]
-                    #                 }
-                    #             ],    
-                    #             theme={
-                    #                     # "background": "white",
-                    #                     "textColor": "white",
-                    #                     "tooltip": {
-                    #                         "container": {
-                    #                             "background": "#3a3c4a",
-                    #                             "color": "white",
-                    #                         }
-                    #                     }
-                    #                 }                         
-                    #             )
-                    #         ] 
-                    #     ,key = 'items2',sx={'background-color':'#3a3c4a','borderRadius':'5%'})
-                        
-
-                    # st.subheader('컨텐츠별 시청자 반응 비율(좋아요,댓글)')
-                    # st.subheader('컨텐츠별 예상이익 비율')
 
             with st.expander("See DATA"):
                 st.write(grouped_year)
@@ -494,7 +395,8 @@ if uploaded_file is not None:
                 
 
     st.divider()
-    
+
+    # 전처리
     with st.container():
         st.subheader('데이터 전처리')
         st.caption('대부분 오른쪽으로 치우쳐있는 왜도값을 갖고있습니다. "-2~+2" 를 벗어나는 변수에 log화를 해주었습니다.')
@@ -542,6 +444,7 @@ if uploaded_file is not None:
 
     st.divider()
 
+    # 회귀분석 결과
     with st.container():
         st.subheader('수익이 높은 컨텐츠라고 해서 시청자들의 반응도 높을까?🤔?')
         
