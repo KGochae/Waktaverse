@@ -101,7 +101,7 @@ if uploaded_file is not None:
         col1,_,col2 = st.columns([1.5,0.2,1.5])
         with col1:
             st.subheader('💻업로드 시간') 
-            st.caption(''' 형 주로 언제 업로드해?''')      
+            st.caption(''' 주로 업로드 하는 시간은?''')      
 
             year_option = st.selectbox('Select year', ['2023','2022','2021', '2020','ALL'], key='year_option')
 
