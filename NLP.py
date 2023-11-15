@@ -48,22 +48,19 @@ twi = Twitter()
 
 # 댓글 가져오고 / sentiment 적용
 def get_comment(videoId):
-    # videoId = 'Lm1AiWIMbO0'
     comments = list()
-    response = youtube.commentThreads().list(part='snippet,replies', videoId = videoId, maxResults=100).execute()
+    total_comments = 0
+    response = youtube.commentThreads().list(part='snippet,replies', videoId=videoId, maxResults=100).execute()
 
-    while response:
+    while response and total_comments < 800:
         for item in response['items']:
             comment = item['snippet']['topLevelComment']['snippet']
-            comments.append([comment['textDisplay'], comment['likeCount']]) # comment['publishedAt'],
+            comments.append([comment['textDisplay'], comment['likeCount']])  
+            total_comments += 1
 
-            if item['snippet']['totalReplyCount'] > 0:
-                for reply_item in item['replies']['comments']:
-                    reply = reply_item['snippet']
-                    comments.append([reply['textDisplay'],  reply['likeCount']]) #reply['publishedAt'], 
-
-        if 'nextPageToken' in response:
-            response = youtube.commentThreads().list(part='snippet,replies', videoId = videoId, pageToken=response['nextPageToken'], maxResults=100).execute()
+        if total_comments < 800 and 'nextPageToken' in response:
+            response = youtube.commentThreads().list(part='snippet,replies', videoId=videoId,
+                                                     pageToken=response['nextPageToken'], maxResults=100).execute()
         else:
             break
 
@@ -80,12 +77,8 @@ def get_comment(videoId):
     comment_df['comment'] = comment_df['comment'].apply(lambda x: re.sub('[^ㄱ-ㅎㅏ-ㅣ가-힣 ]+', '',x))
     comment_df['comment'] = comment_df['comment'].apply(lambda x: emoticon_normalize(x, num_repeats=3))
 
-
-    if len(comment_df['comment']) > 1000: # 댓글이 1000 개 이상인경우 좋아요 조건
-        comment_df = comment_df[comment_df['like'] > 0]
-        comment_df[['score', 'tmp']] = comment_df['comment'].apply(lambda x: pd.Series(sentiment_predict(x)))
-    else: 
-        comment_df[['score', 'tmp']] = comment_df['comment'].apply(lambda x: pd.Series(sentiment_predict(x)))
+    # 감성분석
+    comment_df[['score', 'tmp']] = comment_df['comment'].apply(lambda x: pd.Series(sentiment_predict(x)))
     
     return comment_df
 
