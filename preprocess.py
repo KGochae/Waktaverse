@@ -16,7 +16,6 @@ year = str(now.strftime('%Y'))
 # ----------------------------------------------------- 재생목록/구독자 증가량 -------------------------------------------------------------------------- #
 
 
-@st.cache_data
 def data_diff (data):
     # data = pd.concat(dfs) if dfs else ''
     data = data.sort_values(by=['title', 'down_at'])
@@ -74,7 +73,6 @@ def data_diff (data):
 
 # ------------------------------------------------------일별,주별,월별 hot video -------------------------------------------------------------------------- #
 
-@st.cache_data
 def hot_video(merged_df,playlist_titles, year, month): 
 
     total_diff = pd.DataFrame()    
