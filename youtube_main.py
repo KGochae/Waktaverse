@@ -36,7 +36,7 @@ week_start = week.strftime('%m-%d')
 month = str(now.strftime('%m'))
 year = str(now.strftime('%Y'))
 
-min_date = datetime.date(now.year, 6, 20)
+min_date = datetime.date(now.year, 8, 2)
 max_date = datetime.date(now.year, now.month, now.day)
 befor_7 = datetime.date(now.year, now.month-2,now.day)
 
