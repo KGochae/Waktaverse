@@ -1,5 +1,9 @@
 # Youtube channel Waktaverse DASHBOARD
 
+### issue
+* (2023-11-15) streamlit 캐시 제한 이슈로 영상 감성분석시 댓글 제한을 걸어 두었습니다. (답글을 포함한 댓글 -> 최대 800개 댓글) 
+
+
 ## 구경가기👉 [WAKTAVERSE DASHBOARD](https://waktaverse-dashboard-test.streamlit.app/)
 
 # 🔧TOOL
