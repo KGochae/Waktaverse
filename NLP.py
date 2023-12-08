@@ -333,7 +333,7 @@ def monthly_gomem(df):
     gomem_chart = {}
 
   # 각 월별 데이터 계산 및 저장
-    for month in range(1, 11):
+    for month in range(1, 12):
         most_gomem, most_aka = gomem_comment(df, 'tmp', 2023, month)
         most_common_words = most_gomem + most_aka
         month_data = [{'id': gomem_name, 'count': count} for gomem_name, count in most_common_words]
