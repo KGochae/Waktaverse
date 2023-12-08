@@ -1362,7 +1362,7 @@ if not data.empty:
                     c1,c2,c3 = st.columns([1,2,1])       
 
                     with c1:
-                        month_option = st.selectbox('month',[10,9,8,7,6,5,4,3,2,1,'all'], key='gomem_month')
+                        month_option = st.selectbox('month',[11,10,9,8,7,6,5,4,3,2,1,'all'], key='gomem_month')
                         most_gomem, most_aka = gomem_comment(comment_data,'tmp', 2023, month_option)                    
                         
                         st.session_state.most_gomem = most_gomem
