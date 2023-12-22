@@ -88,9 +88,10 @@ def load_comment():
 
 @st.cache_data(ttl=43200)  
 def load_data():
-    data = load_maindata()
+    data = load_maindata() 
     comment_data = load_comment()
-    return data, comment_data
+    isaedol = pd.read_csv('csv_data/이세계아이돌_video_2312.csv')
+    return data, comment_data, isaedol
 
 data, comment_data = load_data()
 
@@ -1623,25 +1624,20 @@ if not data.empty:
 
 
 # ---------------------------------------------------------- 이세돌 3집 컴백 챌린지 영상 추세----------------------------------------------------------------------------------- #    
-
     st.divider()
 
-    with st.container():
-        st.subheader('🎧(Youtube) 이세계아이돌 챌린지 영상 추세 ')            
-        st.caption(' Youtube 에서 "이세계아이돌"과 관련된 영상들이 얼마나 늘어나고 있는지 추세를 확인해 보았습니다.(검색했을 때 뜨는 기준)')
-        # if uploaded_file is not None:
-        isaedol = pd.read_csv('csv_data/이세계아이돌_video.csv')
-
-    # with st.form(key='isaedol youtube video count'):
-        # submit_search = st.form_submit_button('데이터 수집')
-        # if submit_search:
-        #     with st.spinner('영상수집중..'):
-        #         isaedol = get_video_isaeedol()
-        st.session_state.isaedol = isaedol
-
-
+    if isaedol is not None:
         if hasattr(st.session_state, 'isaedol'):
             isaedol = st.session_state.isaedol
+
+        else:
+            isaedol = pd.read_csv('csv_data/이세계아이돌_video_2312.csv')
+            st.session_state.isaedol = isaedol 
+
+
+        with st.container():
+            st.subheader('🎧(Youtube) 이세계아이돌 챌린지 영상 추세 ')            
+            st.caption(' Youtube 에서 "이세계아이돌"과 관련된 영상들이 얼마나 늘어나고 있는지 추세를 확인해보세요! (검색했을 때 뜨는 기준)')
 
             isaedol['publishedAt'] = pd.to_datetime(isaedol['publishedAt']).dt.strftime('%Y-%m-%d')
             isaedol['publishedAt'] = pd.to_datetime(isaedol['publishedAt'], format='%Y-%m-%d')
@@ -1681,69 +1677,70 @@ if not data.empty:
             # 상승률 계산
             total['growth_rate'] = round(((total['cumulative_count'] - total['prev_count']) / total['prev_count']) * 100,0)
 
-        col3, col4 = st.columns([2,1])
-        with col3:
-                # 함수 정의: 그래프 그리기
-                def plot_graph():
-                    # 데이터 설정
-                    x1 = total['date']
-                    y1 = total['cumulative_count']
+            col3, col4 = st.columns([2,1])
+        
+            with col3:
 
-                    x2 = channel2_df['date']
-                    y2 = channel2_df['cumulative_count']
+                    def plot_graph():
+                        # 데이터 설정
+                        x1 = total['date']
+                        y1 = total['cumulative_count']
 
-                    x3 = channel1_df['date']
-                    y3 = channel1_df['cumulative_count']
+                        x2 = channel2_df['date']
+                        y2 = channel2_df['cumulative_count']
 
-                    # 그래프의 크기 설정
-                    fig, ax = plt.subplots(figsize=(10, 5))
-                    fig.set_facecolor('white')
-                    ax.set_facecolor('white')
+                        x3 = channel1_df['date']
+                        y3 = channel1_df['cumulative_count']
 
-                    # 그래프 그리기 (두 개의 라인 차트를 겹쳐서 표시)
-                    plt.plot(x1, y1, marker='o', markersize=3, linestyle='-', color='black', label='total')
-                    plt.plot(x2, y2, marker='o', markersize=3, linestyle='-', color='green', label='cover/challenge')
-                    plt.plot(x3, y3, marker='o', markersize=3, linestyle='-', color='gray', label='general video')
+                        # 그래프의 크기 설정
+                        fig, ax = plt.subplots(figsize=(10, 5))
+                        fig.set_facecolor('white')
+                        ax.set_facecolor('white')
 
-                    # x 라벨과 y 라벨 설정
-                    plt.xlabel('year/month', fontsize=12)
-                    plt.ylabel('count',  fontsize=12)
+                        # 그래프 그리기 (두 개의 라인 차트를 겹쳐서 표시)
+                        plt.plot(x1, y1, marker='o', markersize=3, linestyle='-', color='black', label='total')
+                        plt.plot(x2, y2, marker='o', markersize=3, linestyle='-', color='green', label='cover/challenge')
+                        plt.plot(x3, y3, marker='o', markersize=3, linestyle='-', color='gray', label='general video')
 
-                    # 제목 설정
-                    plt.title('(Youtube hashtag) #IsaegayeIdol Charts', fontsize=15)
+                        # x 라벨과 y 라벨 설정
+                        plt.xlabel('year/month', fontsize=12)
+                        plt.ylabel('count',  fontsize=12)
 
-                    # 세로선 추가
-                    plt.axvline(x='2023-6', color='#FF4646', linestyle='--', label='(Kakao Webtoon OST) RockDown/Another world ')
-                    plt.axvline(x='2023-8', color='#FF9614', linestyle='--', label='(3rd album) Kidding released')
-                    plt.axvline(x='2023-9', color='#FFD732', linestyle='--', label='Isaegye Festival')
+                        # 제목 설정
+                        plt.title('(Youtube hashtag) #IsaegayeIdol Charts', fontsize=15)
 
-                    # 그래프 표시
-                    plt.legend()
-                    plt.xticks(rotation=45)
-                    plt.yticks()
-                    plt.tight_layout()
+                        # 세로선 추가
+                        plt.axvline(x='2023-6', color='#FF4646', linestyle='--', label='(Kakao Webtoon OST) RockDown/Another world ')
+                        plt.axvline(x='2023-8', color='#FF9614', linestyle='--', label='(3rd album) Kidding released')
+                        plt.axvline(x='2023-9', color='#FFD732', linestyle='--', label='Isaegye Festival')
 
-                    st.pyplot(fig)  # Streamlit에 그래프 출력
+                        # 그래프 표시
+                        plt.legend()
+                        plt.xticks(rotation=45)
+                        plt.yticks()
+                        plt.tight_layout()
 
-                plot_graph()
+                        st.pyplot(fig)  # Streamlit에 그래프 출력
 
-        with col4:
-                st.markdown(''' 
-                            > 🔥이세계아이돌 HOT ISSUE 2023         
+                    plot_graph()
 
-                            * (2023.06~07) 카카오웹툰 OST 'RockDown, Another world' EP발매                         
-                            * (2023.08.18) 3집 앨범 'Kidding' 발매 
-                            * (2023.09.23) '이세계페스티벌' 이세계아이돌 첫공연
-                            * (2023.10.08) 서울 이세계아이돌 옥외 스크린 홍보
-                            ''')
+            with col4:
+                    st.markdown(''' 
+                                > 🔥이세계아이돌 HOT ISSUE 2023         
 
-                st.markdown('''                                                        
-                            > 최근 4개월간 이세계아이돌 영상이 :red[209% 증가]했습니다. 
-                            
-                            **3집 "Kidding"** 을 발표하고 안무 챌린지를 시작하면서 :green[커버곡과 쇼츠폼의 안무챌린지 형태의 영상들]이 많이 늘어나고 있습니다. \n                            
-                            **이세계페스티벌 공연** 이후 이세계아이돌의 **무대영상, 페스티벌 VLOG 영상**을 통해 대중들에게 좀 더 다가가는 중입니다.
-                            
-                             ''')
+                                * (2023.06~07) 카카오웹툰 OST 'RockDown, Another world' EP발매                         
+                                * (2023.08.18) 3집 앨범 'Kidding' 발매 
+                                * (2023.09.23) '이세계페스티벌' 이세계아이돌 첫공연
+                                * (2023.10.08) 서울 이세계아이돌 옥외 스크린 홍보
+                                ''')
+
+                    st.markdown('''                                                        
+                                > 6월부터 최근 4개월간 이세계아이돌 영상이 :red[209% 증가]했습니다. 
+                                
+                                **3집 "Kidding"** 을 발표하고 안무 챌린지를 시작하면서 :green[커버곡과 쇼츠폼의 안무챌린지 형태의 영상들]이 많이 늘어나고 있습니다. \n                            
+                                **이세계페스티벌 공연** 이후 이세계아이돌의 **무대영상, 페스티벌 VLOG 영상**을 통해 대중들에게 좀 더 다가가는 중입니다.
+                                
+                                ''')
 
 
 
