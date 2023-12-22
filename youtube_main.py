@@ -93,7 +93,7 @@ def load_data():
     isaedol = pd.read_csv('csv_data/이세계아이돌_video_2312.csv')
     return data, comment_data, isaedol
 
-data, comment_data = load_data()
+data, comment_data, isaedol = load_data()
 
 
 with st.container():
