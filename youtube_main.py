@@ -87,7 +87,7 @@ def load_comment():
     return df
 
 
-@st.cache_data() # ttl ?  
+@st.cache_data(ttl=1*3600) 
 def load_data():
     data = load_maindata() 
     comment_data = load_comment()
