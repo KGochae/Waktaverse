@@ -90,14 +90,14 @@ with open(tokenizer_pickle_path, "rb") as f:
     tokenizer = pickle.load(f)
 
 # 모델
-@st.cache
+@st.cache_resource(ttl=1*1200) 
 def loaded_model():
     model = load_model('model/Bilstm.h5')
     return model
 nlp_model = loaded_model()
 
 # 토크나이져 
-@st.cache_data
+@st.cache_data(ttl=1*1200) 
 def load_tokenizer():
     with open(tokenizer_pickle_path, "rb") as f:
         tokenizer = pickle.load(f)
