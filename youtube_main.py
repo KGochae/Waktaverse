@@ -60,7 +60,7 @@ def load_maindata():
     blobs = bucket.list_blobs()
 
     # CSV 파일만 필터링합니다.
-    csv_blobs = [blob for blob in blobs if blob.name.endswith('.csv') and blob.name.startswith('waktaverse_playlist_2023')]
+    csv_blobs = [blob for blob in blobs if blob.name.endswith('.csv')]
 
 
     # CSV files to DataFrames
