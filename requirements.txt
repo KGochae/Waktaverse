@@ -113,7 +113,7 @@ soynlp==0.0.493
 st-card-component==0.0.10
 statsmodels==0.14.0
 stqdm==0.0.5
-streamlit==1.4.0
+streamlit==1.25.0
 streamlit-apexjs==0.0.3
 streamlit-card==0.0.4
 streamlit-chat==0.0.2.2
