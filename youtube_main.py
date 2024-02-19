@@ -87,14 +87,24 @@ def load_comment():
     return df
 
 
-@st.cache_data(ttl=1*3600) 
 def load_data():
     data = load_maindata() 
     comment_data = load_comment()
     isaedol = pd.read_csv('csv_data/이세계아이돌_video_2312.csv')
     return data, comment_data, isaedol
 
-data, comment_data, isaedol = load_data()
+
+with st.sidebar:
+    with st.form(key ='searchform'):
+        st.subheader("WAKTAVERSE DASHBOARD")
+        submit_search = st.form_submit_button('DATA LOAD')
+        if submit_search:
+            data, comment_data, isaedol = load_data()            
+
+            st.session_state.data = data
+            st.session_state.comment_data = comment_data
+            st.session_state.isaedol = isaedol
+
 
 
 with st.container():
@@ -104,7 +114,7 @@ with st.container():
 
                 ''')
 
-if not data.empty:
+if hasattr(st.session_state, 'data'):
     # 일부 전처리
     merged_df, playlist_titles, subscribe, subscribe_week = data_diff(data)
     total_diff, top3_videos,top3_music, top3_videos_week, top3_music_week, top3_videos_month, top3_music_month = hot_video(merged_df,playlist_titles, year, month)
@@ -1335,290 +1345,279 @@ if not data.empty:
     st.divider()        
  # --------------------------------------------------------------고멤 TOP 5 !!-----------------------------------------------------------------------------------------  #
 
-    if comment_data is not None:
-        if hasattr(st.session_state, 'comment_data'):
-            comment_data = st.session_state.comment_data
+    if hasattr(st.session_state, 'comment_data'):
+        comment_data = st.session_state.comment_data
+        nivo_gomem = monthly_gomem(comment_data)
+        comment_data = comment_data.groupby(['video_id','title','year','month'])['tmp'].sum().reset_index()
 
-        else:
-            # comment_data = pd.read_csv(uploaded_file)
-            # comment_data['date'] = pd.to_datetime(comment_data['date'], errors='coerce')
-            # comment_data['year'] = comment_data['date'].dt.year
-            # comment_data['month'] = comment_data['date'].dt.month
-
-            # # st.session_state에 df가 존재하지 않는 경우, 파일을 읽어와서 저장
-            # comment_data = gomem_tmp(comment_data)            
-            nivo_gomem = monthly_gomem(comment_data)
-
-            comment_data = comment_data.groupby(['video_id','title','year','month'])['tmp'].sum().reset_index()
-
-            st.session_state.comment_data = comment_data 
-            st.session_state.nivo_gomem = nivo_gomem
+        st.session_state.comment_data = comment_data 
+        st.session_state.nivo_gomem = nivo_gomem
 
             
-        with st.container():
-            col1,col2 = st.columns([1.2,2])
-            with col1:
-                st.subheader('🤡 월별 고정멤버 언급량 TOP5 ')
-                st.caption('올해 활약한 멤버 top5를 확인해보세요! ')
-                with st.form(key="waktaverse_aka_comment"):
-                    c1,c2,c3 = st.columns([1,2,1])       
+    with st.container():
+        col1,col2 = st.columns([1.2,2])
+        with col1:
+            st.subheader('🤡 월별 고정멤버 언급량 TOP5 ')
+            st.caption('올해 활약한 멤버 top5를 확인해보세요! ')
+            with st.form(key="waktaverse_aka_comment"):
+                c1,c2,c3 = st.columns([1,2,1])       
 
-                    with c1:
-                        month_option = st.selectbox('month',[11,10,9,8,7,6,5,4,3,2,1,'all'], key='gomem_month')
-                        most_gomem, most_aka = gomem_comment(comment_data,'tmp', 2023, month_option)                    
+                with c1:
+                    month_option = st.selectbox('month',[11,10,9,8,7,6,5,4,3,2,1,'all'], key='gomem_month')
+                    most_gomem, most_aka = gomem_comment(comment_data,'tmp', 2023, month_option)                    
+                    
+                    st.session_state.most_gomem = most_gomem
+                    st.session_state.most_aka = most_aka
+
+                with c2:
+                    if hasattr(st.session_state, 'most_gomem'):
+                        most_gomem = st.session_state.most_gomem
+                    if hasattr(st.session_state, 'most_aka'):
+                        most_aka = st.session_state.most_aka
+
+                    gomem_aka = st.selectbox('month',['고정멤버','아카데미'], key='gomem_aka')
+                    
+                    if gomem_aka == '고정멤버':
+                        gomem_aka = most_gomem
+                        gomem = [item[0] for item in gomem_aka]
+
+                    elif gomem_aka == '아카데미':
+                        gomem_aka = most_aka
+                        gomem = [item[0] for item in gomem_aka]
+
+                with c3:                    
+                    gomem_img = get_member_images(gomem_aka)                        
+                    st.session_state.gomem_img = gomem_img                        
+                    submit_search = st.form_submit_button("확인")
+
+
+
+                if hasattr(st.session_state, 'gomem_img'):
+                    gomem_img = st.session_state.gomem_img
+                    if month_option == 'all':
+                        caption = f'2023년 ":green[왁타버스(예능)]" 영상에서 가장 반응이 뜨거웠던 (언급이 많았던) 멤버입니다.'
+                    else:
+                        caption = f'{month_option}월 ":green[왁타버스(예능)]" 영상에서 가장 반응이 뜨거웠던 (언급이 많았던) 멤버입니다.'
                         
-                        st.session_state.most_gomem = most_gomem
-                        st.session_state.most_aka = most_aka
-
-                    with c2:
-                        if hasattr(st.session_state, 'most_gomem'):
-                            most_gomem = st.session_state.most_gomem
-                        if hasattr(st.session_state, 'most_aka'):
-                            most_aka = st.session_state.most_aka
-
-                        gomem_aka = st.selectbox('month',['고정멤버','아카데미'], key='gomem_aka')
-                        
-                        if gomem_aka == '고정멤버':
-                            gomem_aka = most_gomem
-                            gomem = [item[0] for item in gomem_aka]
-
-                        elif gomem_aka == '아카데미':
-                            gomem_aka = most_aka
-                            gomem = [item[0] for item in gomem_aka]
-
-                    with c3:                    
-                        gomem_img = get_member_images(gomem_aka)                        
-                        st.session_state.gomem_img = gomem_img                        
-                        submit_search = st.form_submit_button("확인")
+                    st.caption(caption)
 
 
 
-                    if hasattr(st.session_state, 'gomem_img'):
-                        gomem_img = st.session_state.gomem_img
-                        if month_option == 'all':
-                            caption = f'2023년 ":green[왁타버스(예능)]" 영상에서 가장 반응이 뜨거웠던 (언급이 많았던) 멤버입니다.'
-                        else:
-                            caption = f'{month_option}월 ":green[왁타버스(예능)]" 영상에서 가장 반응이 뜨거웠던 (언급이 많았던) 멤버입니다.'
+                    # st.caption(f'{month_option}월 ":green[왁타버스(예능)]" 영상에서 가장 반응이 뜨거웠던 (언급이 많았던) 멤버입니다.')
+
+                    try:
+                        for i, member in enumerate(gomem_aka):
+                            name = member[0]
+                            img = gomem_img[name]
+                    
+                        if img:                       
+                            with st.container():
+                                c1,c2,c3,c4,c5 = st.columns([1,1,1,1,1]) 
+                                with c1:
+                                    if len(gomem) > 0 :
+                                        st.image(gomem_img[gomem_aka[0][0]], width=80)
+                                        st.metric('hide',f'🥇{gomem_aka[0][0]}',f'{gomem_aka[0][1]}')
+
+                                with c2:
+                                    if len(gomem) > 1 :
+                                        st.image(gomem_img[gomem_aka[1][0]], width=80)
+                                        st.metric('hide',f'{gomem_aka[1][0]}',f'{gomem_aka[1][1]}')
+                                
+                                with c3:
+                                    if len(gomem) > 2 :
+                                        st.image(gomem_img[gomem_aka[2][0]], width=80)
+                                        st.metric('hide',f'{gomem_aka[2][0]}',f'{gomem_aka[2][1]}')
+                                
+                                with c4:
+                                    if len(gomem) > 3 :
+                                        st.image(gomem_img[gomem_aka[3][0]], width=80)
+                                        st.metric('hide',f'{gomem_aka[3][0]}',f'{gomem_aka[3][1]}')
+                                
+                                with c5:
+                                    if len(gomem) > 4 :
+                                        st.image(gomem_img[gomem_aka[4][0]], width=80)
+                                        st.metric('hide',f'{gomem_aka[4][0]}',f'{gomem_aka[4][1]}')
+
+                    except KeyError:
+                            st.write('error')
+
+            if hasattr(st.session_state, 'nivo_gomem'):
+                nivo_gomem = st.session_state.nivo_gomem
+                gomem_option = st.selectbox('gomem', gomem, key='gomem_name')
+                gomem_hot_video = gomem_video(comment_data, gomem_option) 
+
+                filter_data = [item for item in nivo_gomem if item['id'] in gomem_option]
+
+            with elements("gomem_nivo"):
+                layout=[            
+                    dashboard.Item("item_1", 0, 0, 5, 1.5)
+                    ]
+                with dashboard.Grid(layout):
+
+                    mui.Box( # 재생목록별 전체 조회수 증가량
+                        children =[
+                            mui.Typography(f' (2023) {gomem_option} 월별 언급량',
+                                        variant="body2",
+                                        color="text.secondary",sx={"text-align":"left","font-size":"14px"}),
+
+                            nivo.Line(
+                            data= filter_data,
+                            margin={'top': 20, 'right': 30, 'bottom': 30, 'left': 40},
+                            xScale={'type': 'point',
+                                    },
+
+                            curve="cardinal",
+                            axisTop=None,
+                            axisRight=None,
+                            axisBottom=True,
+
+                            # axisLeft={
+                            #     'tickSize': 4,
+                            #     'tickPadding': 10,
+                            #     'tickRotation': 0,
+                            #     'legend': '조회수',
+                            #     'legendOffset': -70,
+                            #     'legendPosition': 'middle'
+                            # },
+                            colors= {'scheme': 'accent'},
+                            enableGridX = False,
+                            enableGridY = False,
+                            enableArea = True,
+                            areaOpacity = 0.3,
+                            lineWidth=2,
+                            pointSize=5,
+                            pointColor='white',
+                            pointBorderWidth=0.5,
+                            pointBorderColor={'from': 'serieColor'},
+                            pointLabelYOffset=-12,
+                            useMesh=True,
+                            legends=[
+                                        {
+                                        'anchor': 'top-left',
+                                        'direction': 'column',
+                                        'justify': False,
+                                        # 'translateX': -30,
+                                        # 'translateY': -200,
+                                        'itemsSpacing': 0,
+                                        'itemDirection': 'left-to-right',
+                                        'itemWidth': 80,
+                                        'itemHeight': 15,
+                                        'itemOpacity': 0.75,
+                                        'symbolSize': 12,
+                                        'symbolShape': 'circle',
+                                        'symbolBorderColor': 'rgba(0, 0, 0, .5)',
+                                        'effects': [
+                                                {
+                                                'on': 'hover',
+                                                'style': {
+                                                    'itemBackground': 'rgba(0, 0, 0, .03)',
+                                                    'itemOpacity': 1
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ],                            
+                            theme={
+                                    # "background-color": "rgba(158, 60, 74, 0.2)",
+                                    "textColor": "white",
+                                    "tooltip": {
+                                        "container": {
+                                            "background": "#3a3c4a",
+                                            "color": "white",
+                                        }
+                                    }
+                                },
+                            animate= True)
                             
-                        st.caption(caption)
+                            ] ,key="item_1")
 
 
+        with col2:
+            st.markdown(f''' 
+                        ### {gomem_option} 영상 더보기
+                        *  :green[{gomem_option}]의 언급량이 많은 대표 영상 TOP5 입니다!  ''' )
 
-                        # st.caption(f'{month_option}월 ":green[왁타버스(예능)]" 영상에서 가장 반응이 뜨거웠던 (언급이 많았던) 멤버입니다.')
+            with elements("gomem_hot_video"):
+                    layout=[
+                
+                        dashboard.Item(f"item_0", 0, 0, 2, 1.5, isDraggable=False, isResizable=False  ), #isDraggable=False, isResizable=True                    
+                        dashboard.Item(f"item_1", 2, 0, 2, 1.5, isDraggable=False, isResizable=False ),                    
+                        dashboard.Item(f"item_2", 4, 0, 2, 1.5, isDraggable=False, isResizable=False ),                    
+                        dashboard.Item(f"item_3", 0, 2, 2, 1.5, isDraggable=False, isResizable=False ),                    
+                        dashboard.Item(f"item_4", 2, 4, 2, 1.5, isDraggable=False, isResizable=False ),                    
 
-                        try:
-                            for i, member in enumerate(gomem_aka):
-                                name = member[0]
-                                img = gomem_img[name]
-                        
-                            if img:                       
-                                with st.container():
-                                    c1,c2,c3,c4,c5 = st.columns([1,1,1,1,1]) 
-                                    with c1:
-                                        if len(gomem) > 0 :
-                                            st.image(gomem_img[gomem_aka[0][0]], width=80)
-                                            st.metric('hide',f'🥇{gomem_aka[0][0]}',f'{gomem_aka[0][1]}')
-
-                                    with c2:
-                                        if len(gomem) > 1 :
-                                            st.image(gomem_img[gomem_aka[1][0]], width=80)
-                                            st.metric('hide',f'{gomem_aka[1][0]}',f'{gomem_aka[1][1]}')
-                                    
-                                    with c3:
-                                        if len(gomem) > 2 :
-                                            st.image(gomem_img[gomem_aka[2][0]], width=80)
-                                            st.metric('hide',f'{gomem_aka[2][0]}',f'{gomem_aka[2][1]}')
-                                    
-                                    with c4:
-                                        if len(gomem) > 3 :
-                                            st.image(gomem_img[gomem_aka[3][0]], width=80)
-                                            st.metric('hide',f'{gomem_aka[3][0]}',f'{gomem_aka[3][1]}')
-                                    
-                                    with c5:
-                                        if len(gomem) > 4 :
-                                            st.image(gomem_img[gomem_aka[4][0]], width=80)
-                                            st.metric('hide',f'{gomem_aka[4][0]}',f'{gomem_aka[4][1]}')
-
-                        except KeyError:
-                                st.write('error')
-
-                if hasattr(st.session_state, 'nivo_gomem'):
-                    nivo_gomem = st.session_state.nivo_gomem
-                    gomem_option = st.selectbox('gomem', gomem, key='gomem_name')
-                    gomem_hot_video = gomem_video(comment_data, gomem_option) 
-
-                    filter_data = [item for item in nivo_gomem if item['id'] in gomem_option]
-
-                with elements("gomem_nivo"):
-                    layout=[            
-                        dashboard.Item("item_1", 0, 0, 5, 1.5)
                         ]
                     with dashboard.Grid(layout):
-
-                        mui.Box( # 재생목록별 전체 조회수 증가량
-                            children =[
-                                mui.Typography(f' (2023) {gomem_option} 월별 언급량',
-                                            variant="body2",
-                                            color="text.secondary",sx={"text-align":"left","font-size":"14px"}),
-
-                                nivo.Line(
-                                data= filter_data,
-                                margin={'top': 20, 'right': 30, 'bottom': 30, 'left': 40},
-                                xScale={'type': 'point',
-                                        },
-
-                                curve="cardinal",
-                                axisTop=None,
-                                axisRight=None,
-                                axisBottom=True,
-
-                                # axisLeft={
-                                #     'tickSize': 4,
-                                #     'tickPadding': 10,
-                                #     'tickRotation': 0,
-                                #     'legend': '조회수',
-                                #     'legendOffset': -70,
-                                #     'legendPosition': 'middle'
-                                # },
-                                colors= {'scheme': 'accent'},
-                                enableGridX = False,
-                                enableGridY = False,
-                                enableArea = True,
-                                areaOpacity = 0.3,
-                                lineWidth=2,
-                                pointSize=5,
-                                pointColor='white',
-                                pointBorderWidth=0.5,
-                                pointBorderColor={'from': 'serieColor'},
-                                pointLabelYOffset=-12,
-                                useMesh=True,
-                                legends=[
-                                            {
-                                            'anchor': 'top-left',
-                                            'direction': 'column',
-                                            'justify': False,
-                                            # 'translateX': -30,
-                                            # 'translateY': -200,
-                                            'itemsSpacing': 0,
-                                            'itemDirection': 'left-to-right',
-                                            'itemWidth': 80,
-                                            'itemHeight': 15,
-                                            'itemOpacity': 0.75,
-                                            'symbolSize': 12,
-                                            'symbolShape': 'circle',
-                                            'symbolBorderColor': 'rgba(0, 0, 0, .5)',
-                                            'effects': [
-                                                    {
-                                                    'on': 'hover',
-                                                    'style': {
-                                                        'itemBackground': 'rgba(0, 0, 0, .03)',
-                                                        'itemOpacity': 1
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        ],                            
-                                theme={
-                                        # "background-color": "rgba(158, 60, 74, 0.2)",
-                                        "textColor": "white",
-                                        "tooltip": {
-                                            "container": {
-                                                "background": "#3a3c4a",
-                                                "color": "white",
-                                            }
-                                        }
-                                    },
-                                animate= True)
-                                
-                                ] ,key="item_1")
-
-
-            with col2:
-                st.markdown(f''' 
-                            ### {gomem_option} 영상 더보기
-                            *  :green[{gomem_option}]의 언급량이 많은 대표 영상 TOP5 입니다!  ''' )
-
-                with elements("gomem_hot_video"):
-                        layout=[
-                    
-                            dashboard.Item(f"item_0", 0, 0, 2, 1.5, isDraggable=False, isResizable=False  ), #isDraggable=False, isResizable=True                    
-                            dashboard.Item(f"item_1", 2, 0, 2, 1.5, isDraggable=False, isResizable=False ),                    
-                            dashboard.Item(f"item_2", 4, 0, 2, 1.5, isDraggable=False, isResizable=False ),                    
-                            dashboard.Item(f"item_3", 0, 2, 2, 1.5, isDraggable=False, isResizable=False ),                    
-                            dashboard.Item(f"item_4", 2, 4, 2, 1.5, isDraggable=False, isResizable=False ),                    
-
-                            ]
-                        with dashboard.Grid(layout):
-                            for i in range(5):
-                                mui.Box(
-                                        mui.CardContent( # 재생목록/링크
-                                            sx={'display':'flex',
-                                                'padding': '2px 0 0 0'
-                                                },
-                                            children=[
-                                                mui.Typography(
-                                                            f"{gomem_option} 추천 영상",
-                                                            component="div",
-                                                            sx={"font-size":"12px",
-                                                                "padding-left": 10,
-                                                                "padding-right": 10}                            
-                                                        ),
-                                                mui.Link(
-                                                    "🔗",
-                                                    href=f"https://www.youtube.com/watch?v={gomem_hot_video['video_id'].iloc[i]}",
-                                                    target="_blank",
-                                                    sx={"font-size": "12px",
-                                                        "font-weight": "bold"}
-                                                        )                                                                                       
-                                                    ]                            
-                                                ),
-
-
-                                        mui.CardMedia( # 썸네일 이미지
-                                            sx={ "height": 150,
-                                                "backgroundImage": f"linear-gradient(rgba(0, 0, 0, 0), rgba(0,0,0,0.5)), url(https://i.ytimg.com/vi/{gomem_hot_video['video_id'].iloc[i]}/sddefault.jpg)",
-                                                # "mt": 0.5
-                                                },
+                        for i in range(5):
+                            mui.Box(
+                                    mui.CardContent( # 재생목록/링크
+                                        sx={'display':'flex',
+                                            'padding': '2px 0 0 0'
+                                            },
+                                        children=[
+                                            mui.Typography(
+                                                        f"{gomem_option} 추천 영상",
+                                                        component="div",
+                                                        sx={"font-size":"12px",
+                                                            "padding-left": 10,
+                                                            "padding-right": 10}                            
+                                                    ),
+                                            mui.Link(
+                                                "🔗",
+                                                href=f"https://www.youtube.com/watch?v={gomem_hot_video['video_id'].iloc[i]}",
+                                                target="_blank",
+                                                sx={"font-size": "12px",
+                                                    "font-weight": "bold"}
+                                                    )                                                                                       
+                                                ]                            
                                             ),
 
-                                        mui.CardContent( # 타이틀 조회수증가량
-                                            sx = hot_video_card_sx,
-                                            children=[
-                                                mui.Typography( # 타이틀
-                                                    f"{gomem_hot_video['title'].iloc[i]}",
-                                                    component="div",
-                                                    sx=title_sx                           
+
+                                    mui.CardMedia( # 썸네일 이미지
+                                        sx={ "height": 150,
+                                            "backgroundImage": f"linear-gradient(rgba(0, 0, 0, 0), rgba(0,0,0,0.5)), url(https://i.ytimg.com/vi/{gomem_hot_video['video_id'].iloc[i]}/sddefault.jpg)",
+                                            # "mt": 0.5
+                                            },
+                                        ),
+
+                                    mui.CardContent( # 타이틀 조회수증가량
+                                        sx = hot_video_card_sx,
+                                        children=[
+                                            mui.Typography( # 타이틀
+                                                f"{gomem_hot_video['title'].iloc[i]}",
+                                                component="div",
+                                                sx=title_sx                           
+                                            ),
+                                        
+                                            mui.Divider(orientation="vertical",sx={"border-width":"1px"}), # divider 추가
+                                        
+                                            mui.Box(
+                                                sx={"align-items": "center"},
+                                                children = [
+                                                    mui.Typography(
+                                                        f"{int(gomem_hot_video['cnt'].iloc[i])}",
+                                                            variant='body2', 
+                                                        sx={
+                                                            "font-size" : "25px",
+                                                            "fontWeight":"bold",
+                                                            "text-align":"center",
+                                                            "height":"30px"
+                                                            },     
+                                                        ),   
+                                                    mui.Typography(
+                                                        "언급량",
+                                                            variant='body2', 
+                                                        sx={
+                                                            "font-size" : "10px",
+                                                            "fontWeight":"bold",
+                                                            "text-align":"center"
+                                                            },     
+                                                        )
+                                                    ]                                                        
                                                 ),
-                                            
-                                                mui.Divider(orientation="vertical",sx={"border-width":"1px"}), # divider 추가
-                                            
-                                                mui.Box(
-                                                    sx={"align-items": "center"},
-                                                    children = [
-                                                        mui.Typography(
-                                                            f"{int(gomem_hot_video['cnt'].iloc[i])}",
-                                                                variant='body2', 
-                                                            sx={
-                                                                "font-size" : "25px",
-                                                                "fontWeight":"bold",
-                                                                "text-align":"center",
-                                                                "height":"30px"
-                                                                },     
-                                                            ),   
-                                                        mui.Typography(
-                                                            "언급량",
-                                                                variant='body2', 
-                                                            sx={
-                                                                "font-size" : "10px",
-                                                                "fontWeight":"bold",
-                                                                "text-align":"center"
-                                                                },     
-                                                            )
-                                                        ]                                                        
-                                                    ),
-                                                ]
-                                            )                       
-                                                ,key=f'item_{i}',sx={"borderRadius": '23px'})
+                                            ]
+                                        )                       
+                                            ,key=f'item_{i}',sx={"borderRadius": '23px'})
 
 
 
@@ -1627,121 +1626,118 @@ if not data.empty:
 # ---------------------------------------------------------- 이세돌 3집 컴백 챌린지 영상 추세----------------------------------------------------------------------------------- #    
     st.divider()
 
-    if isaedol is not None:
-        if hasattr(st.session_state, 'isaedol'):
-            isaedol = st.session_state.isaedol
-
-        else:
-            isaedol = pd.read_csv('csv_data/이세계아이돌_video_2312.csv')
-            st.session_state.isaedol = isaedol 
+    if hasattr(st.session_state, 'isaedol'):
+        isaedol = st.session_state.isaedol
+        isaedol = pd.read_csv('csv_data/이세계아이돌_video_2312.csv')
+        st.session_state.isaedol = isaedol 
 
 
-        with st.container():
-            st.subheader('🎧(Youtube) 이세계아이돌 챌린지 영상 추세 ')            
-            st.caption(' Youtube 에서 "이세계아이돌"과 관련된 영상들이 얼마나 늘어나고 있는지 추세를 확인해보세요! (검색했을 때 뜨는 기준)')
+    with st.container():
+        st.subheader('🎧(Youtube) 이세계아이돌 챌린지 영상 추세 ')            
+        st.caption(' Youtube 에서 "이세계아이돌"과 관련된 영상들이 얼마나 늘어나고 있는지 추세를 확인해보세요! (검색했을 때 뜨는 기준)')
 
-            isaedol['publishedAt'] = pd.to_datetime(isaedol['publishedAt']).dt.strftime('%Y-%m-%d')
-            isaedol['publishedAt'] = pd.to_datetime(isaedol['publishedAt'], format='%Y-%m-%d')
-            isaedol['year'] = isaedol['publishedAt'].dt.year 
-            isaedol['month'] = isaedol['publishedAt'].dt.month 
+        isaedol['publishedAt'] = pd.to_datetime(isaedol['publishedAt']).dt.strftime('%Y-%m-%d')
+        isaedol['publishedAt'] = pd.to_datetime(isaedol['publishedAt'], format='%Y-%m-%d')
+        isaedol['year'] = isaedol['publishedAt'].dt.year 
+        isaedol['month'] = isaedol['publishedAt'].dt.month 
 
-            isaedol = isaedol[isaedol['year'] > 2021]
+        isaedol = isaedol[isaedol['year'] > 2021]
 
-            # isae_channel = ['아이네 INE','우왁굳의 돚거','비챤 VIichan','고세구 GOSEGU','왁타버스 WAKTAVERSE','비챤의 나랑놀아','징버거 JINGBURGER','주르르 JURURU','릴파의 꼬꼬','고세구의 좀 더']
-            # isaedol['channel'] = '그 외 채널'
-            # isaedol.loc[isaedol['channelTitle'].isin(isae_channel),'channel'] ='이세돌/우왁굳 채널'
+        # isae_channel = ['아이네 INE','우왁굳의 돚거','비챤 VIichan','고세구 GOSEGU','왁타버스 WAKTAVERSE','비챤의 나랑놀아','징버거 JINGBURGER','주르르 JURURU','릴파의 꼬꼬','고세구의 좀 더']
+        # isaedol['channel'] = '그 외 채널'
+        # isaedol.loc[isaedol['channelTitle'].isin(isae_channel),'channel'] ='이세돌/우왁굳 채널'
 
-            isaedol['channel'] = '일반 영상'
-            isaedol.loc[isaedol['title'].str.contains('Cover|COVER|cover|커버|챌린지|challenge'),'channel'] ='커버 및 챌린지'
+        isaedol['channel'] = '일반 영상'
+        isaedol.loc[isaedol['title'].str.contains('Cover|COVER|cover|커버|챌린지|challenge'),'channel'] ='커버 및 챌린지'
 
-            count_by_year_month = isaedol.groupby(['year', 'month','channel']).size()
-            count_df = count_by_year_month.reset_index(name='count')
+        count_by_year_month = isaedol.groupby(['year', 'month','channel']).size()
+        count_df = count_by_year_month.reset_index(name='count')
 
-            total = isaedol.groupby(['year','month']).size()
-            total = total.reset_index(name='count')
+        total = isaedol.groupby(['year','month']).size()
+        total = total.reset_index(name='count')
 
-            channel1_df = count_df[count_df['channel'] == '일반 영상']
-            channel2_df = count_df[count_df['channel'] == '커버 및 챌린지']
+        channel1_df = count_df[count_df['channel'] == '일반 영상']
+        channel2_df = count_df[count_df['channel'] == '커버 및 챌린지']
 
-            # count 값을 한 행씩 더하기
-            channel1_df['cumulative_count'] = channel1_df['count'].cumsum() # 누적합 함수 cunsum()
-            channel2_df['cumulative_count'] = channel2_df['count'].cumsum()
-            total['cumulative_count'] = total['count'].cumsum()
+        # count 값을 한 행씩 더하기
+        channel1_df['cumulative_count'] = channel1_df['count'].cumsum() # 누적합 함수 cunsum()
+        channel2_df['cumulative_count'] = channel2_df['count'].cumsum()
+        total['cumulative_count'] = total['count'].cumsum()
 
-            channel1_df['date'] = channel1_df['year'].astype(str) + '-' + channel1_df['month'].astype(str)
-            channel2_df['date'] = channel2_df['year'].astype(str) + '-' + channel2_df['month'].astype(str)
-            total['date'] = total['year'].astype(str) + '-' + total['month'].astype(str)
+        channel1_df['date'] = channel1_df['year'].astype(str) + '-' + channel1_df['month'].astype(str)
+        channel2_df['date'] = channel2_df['year'].astype(str) + '-' + channel2_df['month'].astype(str)
+        total['date'] = total['year'].astype(str) + '-' + total['month'].astype(str)
 
 
-            total['prev_count'] = total['cumulative_count'].shift(1)
+        total['prev_count'] = total['cumulative_count'].shift(1)
 
-            # 상승률 계산
-            total['growth_rate'] = round(((total['cumulative_count'] - total['prev_count']) / total['prev_count']) * 100,0)
+        # 상승률 계산
+        total['growth_rate'] = round(((total['cumulative_count'] - total['prev_count']) / total['prev_count']) * 100,0)
 
-            col3, col4 = st.columns([2,1])
-        
-            with col3:
+        col3, col4 = st.columns([2,1])
+    
+        with col3:
 
-                    def plot_graph():
-                        # 데이터 설정
-                        x1 = total['date']
-                        y1 = total['cumulative_count']
+                def plot_graph():
+                    # 데이터 설정
+                    x1 = total['date']
+                    y1 = total['cumulative_count']
 
-                        x2 = channel2_df['date']
-                        y2 = channel2_df['cumulative_count']
+                    x2 = channel2_df['date']
+                    y2 = channel2_df['cumulative_count']
 
-                        x3 = channel1_df['date']
-                        y3 = channel1_df['cumulative_count']
+                    x3 = channel1_df['date']
+                    y3 = channel1_df['cumulative_count']
 
-                        # 그래프의 크기 설정
-                        fig, ax = plt.subplots(figsize=(10, 5))
-                        fig.set_facecolor('white')
-                        ax.set_facecolor('white')
+                    # 그래프의 크기 설정
+                    fig, ax = plt.subplots(figsize=(10, 5))
+                    fig.set_facecolor('white')
+                    ax.set_facecolor('white')
 
-                        # 그래프 그리기 (두 개의 라인 차트를 겹쳐서 표시)
-                        plt.plot(x1, y1, marker='o', markersize=3, linestyle='-', color='black', label='total')
-                        plt.plot(x2, y2, marker='o', markersize=3, linestyle='-', color='green', label='cover/challenge')
-                        plt.plot(x3, y3, marker='o', markersize=3, linestyle='-', color='gray', label='general video')
+                    # 그래프 그리기 (두 개의 라인 차트를 겹쳐서 표시)
+                    plt.plot(x1, y1, marker='o', markersize=3, linestyle='-', color='black', label='total')
+                    plt.plot(x2, y2, marker='o', markersize=3, linestyle='-', color='green', label='cover/challenge')
+                    plt.plot(x3, y3, marker='o', markersize=3, linestyle='-', color='gray', label='general video')
 
-                        # x 라벨과 y 라벨 설정
-                        plt.xlabel('year/month', fontsize=12)
-                        plt.ylabel('count',  fontsize=12)
+                    # x 라벨과 y 라벨 설정
+                    plt.xlabel('year/month', fontsize=12)
+                    plt.ylabel('count',  fontsize=12)
 
-                        # 제목 설정
-                        plt.title('(Youtube hashtag) #IsaegayeIdol Charts', fontsize=15)
+                    # 제목 설정
+                    plt.title('(Youtube hashtag) #IsaegayeIdol Charts', fontsize=15)
 
-                        # 세로선 추가
-                        plt.axvline(x='2023-6', color='#FF4646', linestyle='--', label='(Kakao Webtoon OST) RockDown/Another world ')
-                        plt.axvline(x='2023-8', color='#FF9614', linestyle='--', label='(3rd album) Kidding released')
-                        plt.axvline(x='2023-9', color='#FFD732', linestyle='--', label='Isaegye Festival')
+                    # 세로선 추가
+                    plt.axvline(x='2023-6', color='#FF4646', linestyle='--', label='(Kakao Webtoon OST) RockDown/Another world ')
+                    plt.axvline(x='2023-8', color='#FF9614', linestyle='--', label='(3rd album) Kidding released')
+                    plt.axvline(x='2023-9', color='#FFD732', linestyle='--', label='Isaegye Festival')
 
-                        # 그래프 표시
-                        plt.legend()
-                        plt.xticks(rotation=45)
-                        plt.yticks()
-                        plt.tight_layout()
+                    # 그래프 표시
+                    plt.legend()
+                    plt.xticks(rotation=45)
+                    plt.yticks()
+                    plt.tight_layout()
 
-                        st.pyplot(fig)  # Streamlit에 그래프 출력
+                    st.pyplot(fig)  # Streamlit에 그래프 출력
 
-                    plot_graph()
+                plot_graph()
 
-            with col4:
-                    st.markdown(''' 
-                                > 🔥이세계아이돌 HOT ISSUE 2023         
+        with col4:
+                st.markdown(''' 
+                            > 🔥이세계아이돌 HOT ISSUE 2023         
 
-                                * (2023.06~07) 카카오웹툰 OST 'RockDown, Another world' EP발매                         
-                                * (2023.08.18) 3집 앨범 'Kidding' 발매 
-                                * (2023.09.23) '이세계페스티벌' 이세계아이돌 첫공연
-                                * (2023.10.08) 서울 이세계아이돌 옥외 스크린 홍보
-                                ''')
+                            * (2023.06~07) 카카오웹툰 OST 'RockDown, Another world' EP발매                         
+                            * (2023.08.18) 3집 앨범 'Kidding' 발매 
+                            * (2023.09.23) '이세계페스티벌' 이세계아이돌 첫공연
+                            * (2023.10.08) 서울 이세계아이돌 옥외 스크린 홍보
+                            ''')
 
-                    st.markdown('''                                                        
-                                > 6월부터 최근 4개월간 이세계아이돌 영상이 :red[209% 증가]했습니다. 
-                                
-                                **3집 "Kidding"** 을 발표하고 안무 챌린지를 시작하면서 :green[커버곡과 쇼츠폼의 안무챌린지 형태의 영상들]이 많이 늘어나고 있습니다. \n                            
-                                **이세계페스티벌 공연** 이후 이세계아이돌의 **무대영상, 페스티벌 VLOG 영상**을 통해 대중들에게 좀 더 다가가는 중입니다.
-                                
-                                ''')
+                st.markdown('''                                                        
+                            > 6월부터 최근 4개월간 이세계아이돌 영상이 :red[209% 증가]했습니다. 
+                            
+                            **3집 "Kidding"** 을 발표하고 안무 챌린지를 시작하면서 :green[커버곡과 쇼츠폼의 안무챌린지 형태의 영상들]이 많이 늘어나고 있습니다. \n                            
+                            **이세계페스티벌 공연** 이후 이세계아이돌의 **무대영상, 페스티벌 VLOG 영상**을 통해 대중들에게 좀 더 다가가는 중입니다.
+                            
+                            ''')
 
 
 
@@ -1861,25 +1857,7 @@ if not data.empty:
             }
             diff_nivo_data.append(extracted_item)
 
-        # 7일 단위로 합치기
-        # new_nivo_data= []
-        # for item in nivo_data:
-        #     if len(item["data"]) > 7:
 
-        #         # 7일씩 합치기
-        #         new_data = [item["data"][0]]
-        #         for i in range(1, len(item["data"])):
-        #             if i % 7 == 0:
-        #                 new_data.append(item["data"][i])
-                
-        #         new_data.append(item["data"][-1])
-
-        #         # 수정된 데이터를 새로운 리스트에 추가
-        #         item["data"] = new_data
-
-        #     # 수정된 데이터를 새로운 리스트에 추가
-        #     new_nivo_data.append(item)
-        # st.write(new_nivo_data)
 
     # (nivo_bar) 전일대비 증가량  차트 
         nivo_bar_data = []
@@ -1897,7 +1875,7 @@ if not data.empty:
             }
             nivo_bar_week.append(extracted_item)
 
-        n = min(len(nivo_data), 30)
+        n = min(len(nivo_data), 15)
     else:
         n = 0
         # st.write('NO DATA')  
@@ -2136,8 +2114,11 @@ if not data.empty:
 
 
 else:
-    st.write('NO DATA')
-
+    with st.container():
+        st.markdown(''' 
+                    # 🖥️ WATKAVERSE DASHBOARD
+                    ''')
+        st.caption('데이터를 로드 해주세요!')
 
 
 
