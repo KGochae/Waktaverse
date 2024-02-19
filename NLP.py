@@ -90,7 +90,7 @@ with open(tokenizer_pickle_path, "rb") as f:
     tokenizer = pickle.load(f)
 
 # 모델
-@st.cache_resource
+@st.cache
 def loaded_model():
     model = load_model('model/Bilstm.h5')
     return model
