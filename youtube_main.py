@@ -60,7 +60,8 @@ def load_maindata():
     blobs = bucket.list_blobs()
 
     # CSV 파일만 필터링합니다.
-    csv_blobs = [blob for blob in blobs if blob.name.endswith('.csv')]
+    csv_blobs = [blob for blob in blobs if blob.name.endswith('.csv') and blob.name.startswith('waktaverse_playlist_2023')]
+
 
     # CSV files to DataFrames
     dfs = []
@@ -86,7 +87,7 @@ def load_comment():
     return df
 
 
-# @st.cache_data(ttl=43200)  
+@st.cache_data() # ttl ?  
 def load_data():
     data = load_maindata() 
     comment_data = load_comment()
