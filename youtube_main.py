@@ -86,7 +86,7 @@ def load_comment():
 
     return df
 
-
+@st.cache_data(ttl=1200)
 def load_data():
     data = load_maindata() 
     comment_data = load_comment()
@@ -97,7 +97,7 @@ def load_data():
 with st.sidebar:
     with st.form(key ='searchform'):
         st.subheader("WAKTAVERSE DASHBOARD")
-        submit_search = st.form_submit_button('DATA LOAD')
+        submit_search = st.form_submit_button('데이터 가져오기!')
         if submit_search:
             data, comment_data, isaedol = load_data()            
 
@@ -106,15 +106,12 @@ with st.sidebar:
             st.session_state.isaedol = isaedol
 
 
-
-with st.container():
-    st.markdown(''' 
-
-                # WATKAVERSE DASHBOARD
-
+if hasattr(st.session_state, 'data'):
+    st.header(''' 
+                    🖥️WATKAVERSE DASHBOARD
                 ''')
 
-if hasattr(st.session_state, 'data'):
+
     # 일부 전처리
     merged_df, playlist_titles, subscribe, subscribe_week = data_diff(data)
     total_diff, top3_videos,top3_music, top3_videos_week, top3_music_week, top3_videos_month, top3_music_month = hot_video(merged_df,playlist_titles, year, month)
