@@ -97,6 +97,7 @@ def load_data():
 with st.sidebar:
     with st.form(key ='searchform'):
         st.subheader("WAKTAVERSE DASHBOARD")
+        st.image('https://i.ibb.co/SKJgrYq/wak.png')
         submit_search = st.form_submit_button('데이터 가져오기!')
         if submit_search:
             data, comment_data, isaedol = load_data()            
