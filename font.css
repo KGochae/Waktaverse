@@ -16,6 +16,18 @@ section.main > div {max-width:90rem;
 }
 
 
+div[data-testid="stSidebar"] {
+    width: 800px;
+    }  
+    
+    [data-testid=stImage]{
+        text-align: center;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        width: 100%;
+    }
+
 
 div[data-testid="metric-container"] {
     padding: 5% 5% 5% 10%;
