@@ -1741,14 +1741,13 @@ if hasattr(st.session_state, 'data'):
     st.divider()
 
 # ------ 왁타버스 차트 -------------------------------------------------------------------------------------------------------------------------------------
-
     st.header("WAKTAVERSE Chart")
 
     with st.container(): 
         with st.form(key="WAKTAVERSE Chart submit"):
             col0,col1,col2,col3 = st.columns([1,1,3,0.5])
             with col0:
-                year_option = st.selectbox('Year',['2023','2022','2021','ALL'], key='year')
+                year_option = st.selectbox('Year',['2024','2023','2022','2021','ALL'], key='year')
             with col1:
                 month_option = st.selectbox('Month', ['12','11','10','9','8','7','6','5','4','3','2','1','ALL',], key='month')
             with col2:
@@ -1777,6 +1776,11 @@ if hasattr(st.session_state, 'data'):
         new_df['week_start'] = new_df['down_at'] - pd.to_timedelta(new_df['down_at'].dt.dayofweek, unit='d')
         weekly_df = new_df.groupby(['video_id', 'week_start'])['view_count_diff'].sum().reset_index()
         weekly_df['week_start'] = pd.to_datetime(weekly_df['week_start']).dt.strftime('%m-%d')
+        weekly_df['previous_view'] = weekly_df.groupby('video_id')['view_count_diff'].shift()
+
+        # 'view_diff' 컬럼 추가 (이전 주와의 차이)
+        weekly_df['week_view_diff'] = weekly_df['view_count_diff'] - weekly_df['previous_view']
+
 
 
 # -------- nivo_chart 를 위한 데이터 형식 가공 ------------------------------------------------------------------------------------------------------------
@@ -1784,9 +1788,12 @@ if hasattr(st.session_state, 'data'):
     if not filtered_df.empty : 
 
         # 날짜 데이터를 str 로 바꿔야함
-        filtered_df['down_at'] = pd.to_datetime(filtered_df['down_at']).dt.strftime('%m-%d')
-        filtered_df['publishedAt'] = pd.to_datetime(filtered_df['publishedAt']).dt.strftime('%Y-%m-%d')
+        # filtered_df = filtered_df[filtered_df['video_id'].isin(positive_diff_ids)]
     
+        filtered_df['down_at'] = pd.to_datetime(filtered_df['down_at']).dt.strftime('%Y-%m-%d')
+        filtered_df['publishedAt'] = pd.to_datetime(filtered_df['publishedAt']).dt.strftime('%Y-%m-%d')
+        filtered_df['reaction'] = filtered_df['comment_count'] + filtered_df['like_count']
+
         main_data = []
         for video_id, group in filtered_df.groupby('video_id'):
             if len(group) > 0:
@@ -1796,12 +1803,19 @@ if hasattr(st.session_state, 'data'):
                 view_count = group.iloc[-1]['view_count']
                 like_count = group.iloc[-1]['like_count'] 
                 comment_count = group.iloc[-1]['comment_count']
+                reaction = group.iloc[-1]['reaction'] 
+                score = group.iloc[-1]['score'] 
                 view_count_diff = group.iloc[-1]['view_count_diff']
 
                 first_view_count = 0
 
                 weekly_group = weekly_df[weekly_df['video_id'] == video_id]
                 weekly_diff_data = [{'x': week_start, 'y': view_count_diff} for week_start, view_count_diff in zip(weekly_group['week_start'], weekly_group['view_count_diff'])]
+                week_view_diff = weekly_group.iloc[-1]['week_view_diff']
+
+                del weekly_diff_data[0] # 첫번째 뻠핑 삭제
+                # del weekly_diff_data[-1] # 시작되는 주 삭제
+
 
                 main_data.append({
                     'id': title,
@@ -1810,12 +1824,14 @@ if hasattr(st.session_state, 'data'):
                     'view_count': view_count,
                     'like_count': like_count,
                     'comment_count': comment_count,
+                    'reaction' : reaction,
+                    'score' : score,
                     'view_count_diff': view_count_diff,
-                    'data': [{'x': publishedAt, 'y': first_view_count}] + [{'x': down_at, 'y': view_count} for down_at, view_count in zip(group['down_at'], group['view_count']) if down_at >= '06-19'],
-                    'diff_data': [{'x': down_at, 'y': view_count_diff} for down_at, view_count_diff in zip(group['down_at'], group['view_count_diff']) if down_at >= '06-19'],
+                    'week_view_diff': week_view_diff,
+                    'data': [{'x': publishedAt, 'y': first_view_count}] + [{'x': down_at, 'y': view_count} for down_at, view_count in zip(group['down_at'], group['view_count']) if down_at >= '2023-06-19'],
+                    'diff_data': [{'x': down_at, 'y': view_count_diff} for down_at, view_count_diff in zip(group['down_at'], group['view_count_diff']) if down_at >= '2023-06-19'],
                     'weekly_diff': weekly_diff_data,
                 })
-        # st.write(main_data)
 
         # sort 옵션
         with st.container():
@@ -1823,16 +1839,23 @@ if hasattr(st.session_state, 'data'):
             with col1:
                 st.markdown(f""" ### 📊 ({year_option}) {list_option}  """)
             with col2:
-                sort_option_count = st.selectbox('정렬기준', ['최신순','전일대비 증가순','조회수','좋아요'], key='sort_count')
+                sort_option_count = st.selectbox('정렬기준', ['최신순','전일대비 증가순','주간대비 증가순','조회수','댓글수','좋아요','반응'], key='sort_count')
                 
                 if sort_option_count == '최신순':
                     main_data = sorted(main_data, key=lambda x: x['publishedAt'], reverse=True)
                 elif sort_option_count == '전일대비 증가순':
                     main_data = sorted(main_data, key=lambda x: x['view_count_diff'], reverse=True)
+                elif sort_option_count == '주간 증가순':
+                    main_data = sorted(main_data, key=lambda x: x['week_view_diff'], reverse=True)
                 elif sort_option_count == '조회수':
                     main_data = sorted(main_data, key=lambda x: x['view_count'], reverse=True)
+                elif sort_option_count == '댓글수':
+                    main_data = sorted(main_data, key=lambda x: x['comment_count'], reverse=True)
                 elif sort_option_count == '좋아요':
                     main_data = sorted(main_data, key=lambda x: x['like_count'], reverse=True)
+                elif sort_option_count == '반응':
+                    main_data = sorted(main_data, key=lambda x: x['reaction'], reverse=True)
+
 
         # (line) 조회수 그래프
         nivo_data = []
@@ -1847,13 +1870,15 @@ if hasattr(st.session_state, 'data'):
         # (line) 전일대비 증가량
         diff_nivo_data = []
         for item in main_data:
+
             extracted_item = {
                 "id": item["id"],
                 "video_id": item["video_id"],
-                "data": item["diff_data"]
+                "data": item["weekly_diff"]                
             }
-            diff_nivo_data.append(extracted_item)
 
+            
+            diff_nivo_data.append(extracted_item)
 
 
     # (nivo_bar) 전일대비 증가량  차트 
@@ -1872,7 +1897,7 @@ if hasattr(st.session_state, 'data'):
             }
             nivo_bar_week.append(extracted_item)
 
-        n = min(len(nivo_data), 15)
+        n = min(len(nivo_data), 5)
     else:
         n = 0
         # st.write('NO DATA')  
@@ -1960,7 +1985,7 @@ if hasattr(st.session_state, 'data'):
                     mui.Box(  # nivo_line       
                             nivo.Line(
                                 data= [diff_nivo_data[i]],
-                                margin={'top': 50, 'right': 50, 'bottom': 20, 'left': 70},
+                                margin={'top': 30, 'right': 50, 'bottom': 50, 'left': 70},
                                 xScale={'type': 'point'},
                                 yScale={
                                     'type': 'linear',
@@ -1970,22 +1995,19 @@ if hasattr(st.session_state, 'data'):
                                     'reverse': False
                                 },
                                 curve="cardinal",
+                                enablePointLabel=True,
                                 axisRight=None,
-                                axisBottom=None,
-                                # {
-                                #     'tickCount': 5,
-                                #     'tickValues': tickValues,  # X축 값들 사이에 구분선을 그리기 위해 설정
-                                #     'tickSize': 0,
-                                #     'tickPadding': 5,
-                                #     'tickRotation': 0,
-                                #     'legendOffset': 36,
-                                #     'legendPosition': 'middle',
-                                # },
+                                axisBottom={
+                                            'tickSize': 5,
+                                            'tickPadding': 10,
+                                            'tickRotation': 0,
+                                            'legendOffset': 36,
+                                            'legendPosition': 'middle'
+                                        },
                                 axisLeft={
                                     'tickSize': 4,
                                     'tickPadding': 10,
                                     'tickRotation': 0,
-                                    'legend': '조회수',
                                     'legendOffset': -100,
                                     'legendPosition': 'middle'
                                 },
@@ -1993,13 +2015,14 @@ if hasattr(st.session_state, 'data'):
                                 enableGridX = False,
                                 enableGridY = False,
                                 lineWidth=3,
-                                pointSize=0,
+                                pointSize=5,
                                 pointColor='white',
                                 pointBorderWidth=1,
                                 pointBorderColor={'from': 'serieColor'},
                                 pointLabelYOffset=-12,
-                                enableArea=True,
-                                areaOpacity='0.15',
+                                # enableArea=True,
+                                # areaOpacity='0.1',
+                                # areaBaselineValue=True,
                                 useMesh=True,                
                                 theme={
                                         # "background": "#100F0F", # #262730 #100F0F
@@ -2018,7 +2041,7 @@ if hasattr(st.session_state, 'data'):
                             #         '최근 7일 평균 조회수 평균 좋아요 '
                             #     )
                             # )
-                                ,key='second_item' ,sx={"borderRadius": '15px',"display":"flex","background-color" : "#0E0E0E"},elevation=2) # "background-color":"#0E0E0E"
+                                ,key='second_item' ,sx={"borderRadius": '15px',"background-color" : "#0E0E0E"}) # "background-color":"#0E0E0E"
                     
                     mui.Box( # 전일 대비 조회수
                         sx={"background-color":"#0E0E0E","borderRadius": '15px'},
@@ -2113,9 +2136,13 @@ if hasattr(st.session_state, 'data'):
 else:
     with st.container():
         st.markdown(''' 
+
                     # 🖥️ WATKAVERSE DASHBOARD
+
                     ''')
         st.caption('데이터를 로드 해주세요!')
+
+
 
 
 
