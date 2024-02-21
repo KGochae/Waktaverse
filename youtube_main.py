@@ -1806,7 +1806,6 @@ if hasattr(st.session_state, 'data'):
                 like_count = group.iloc[-1]['like_count'] 
                 comment_count = group.iloc[-1]['comment_count']
                 reaction = group.iloc[-1]['reaction'] 
-                score = group.iloc[-1]['score'] 
                 view_count_diff = group.iloc[-1]['view_count_diff']
 
                 first_view_count = 0
@@ -1827,7 +1826,6 @@ if hasattr(st.session_state, 'data'):
                     'like_count': like_count,
                     'comment_count': comment_count,
                     'reaction' : reaction,
-                    'score' : score,
                     'view_count_diff': view_count_diff,
                     'week_view_diff': week_view_diff,
                     'data': [{'x': publishedAt, 'y': first_view_count}] + [{'x': down_at, 'y': view_count} for down_at, view_count in zip(group['down_at'], group['view_count']) if down_at >= '2023-06-19'],
