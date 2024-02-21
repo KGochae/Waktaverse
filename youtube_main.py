@@ -107,6 +107,8 @@ with st.sidebar:
 
 
 if hasattr(st.session_state, 'data'):
+    data = st.session_state.data
+    
     st.header(''' 
                     🖥️WATKAVERSE DASHBOARD
                 ''')
