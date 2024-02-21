@@ -26,7 +26,8 @@ def data_diff (data):
 
     data['down_at'] = pd.to_datetime(data['down_at']).dt.strftime('%Y-%m-%d')
     data['down_at'] = pd.to_datetime(data['down_at'], format='%Y-%m-%d')
-
+    data = data[data['down_at'] > '2023-10-01']                            # 데이터가 쌓이면서 차트가 괴랄해진다.. 일단, 10월 이후의 데이터만
+    
     # year 과 month 를 구분해주자.
     data['year'] = data['publishedAt'].dt.year.astype(str)
     data['month'] = data['publishedAt'].dt.month.astype(str)
