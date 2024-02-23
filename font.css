@@ -37,7 +37,9 @@ div[data-testid="stSidebar"] {
         margin-right: auto;
         width: 100%;
     }
-
+    [data-testid="stFormSubmitButton"]{
+        text-align: center;
+    }
 
 div[data-testid="metric-container"] {
     padding: 5% 5% 5% 10%;
@@ -68,3 +70,4 @@ div[data-testid="metric-container"] {
     [data-testid="stMetricDelta"] svg {
         display: none;
     }   
+    
