@@ -86,7 +86,7 @@ def load_comment():
 
     return df
 
-@st.cache_data(ttl=1200)
+@st.cache_data(ttl=3600)
 def load_data():
     data = load_maindata() 
     comment_data = load_comment()
@@ -97,6 +97,9 @@ def load_data():
 with st.sidebar:
     with st.form(key ='searchform'):
         st.subheader("WAKTAVERSE DASHBOARD")
+        st.caption('''
+                    google cloud storage에 저장된 WAKTAVERSE 채널의 데이터를 불러옵니다😁! (데이터는 매일 18시에 수집됩니다)        
+                    ''')
         st.image('https://i.ibb.co/SKJgrYq/wak.png')
         submit_search = st.form_submit_button('데이터 가져오기 ')
 
