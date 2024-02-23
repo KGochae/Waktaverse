@@ -98,26 +98,76 @@ with st.sidebar:
     with st.form(key ='searchform'):
         st.subheader("WAKTAVERSE DASHBOARD")
         st.image('https://i.ibb.co/SKJgrYq/wak.png')
-        submit_search = st.form_submit_button('데이터 가져오기!')
-        if submit_search:
-            data, comment_data, isaedol = load_data()            
+        submit_search = st.form_submit_button('데이터 가져오기 ')
 
-            st.session_state.data = data
-            st.session_state.comment_data = comment_data
-            st.session_state.isaedol = isaedol
+if submit_search:
+    data, comment_data, isaedol = load_data()                        
+    merged_df, playlist_titles, subscribe, subscribe_week = data_diff(data)
+    total_diff, top3_videos, top3_music, top3_videos_week, top3_music_week, top3_videos_month, top3_music_month = hot_video(merged_df,playlist_titles, year, month)
+
+
+    st.session_state.data = data
+    st.session_state.comment_data = comment_data
+    st.session_state.isaedol = isaedol
+
+
+    st.session_state.total_diff = total_diff
+    st.session_state.top3_videos = top3_videos
+    st.session_state.top3_videos_week = top3_videos_week
+    st.session_state.top3_videos_month = top3_videos_month
+
+    st.session_state.top3_music = top3_music
+    st.session_state.top3_music_week = top3_music_week
+    st.session_state.top3_music_month = top3_music_month
+
+    st.session_state.merged_df = merged_df
+    st.session_state.playlist_titles = playlist_titles
+    st.session_state.subscribe = subscribe
+    st.session_state.subscribe_week = subscribe_week
+
+
+# Check and assign for each variable
+if hasattr(st.session_state, 'total_diff'):
+    total_diff = st.session_state.total_diff
+
+if hasattr(st.session_state, 'top3_videos'):
+    top3_videos = st.session_state.top3_videos
+
+if hasattr(st.session_state, 'top3_music'):
+    top3_music = st.session_state.top3_music
+
+if hasattr(st.session_state, 'top3_videos_week'):
+    top3_videos_week = st.session_state.top3_videos_week
+
+if hasattr(st.session_state, 'top3_music_week'):
+    top3_music_week = st.session_state.top3_music_week
+
+if hasattr(st.session_state, 'top3_videos_month'):
+    top3_videos_month = st.session_state.top3_videos_month
+
+if hasattr(st.session_state, 'top3_music_month'):
+    top3_music_month = st.session_state.top3_music_month
+
+if hasattr(st.session_state, 'merged_df'):
+    merged_df = st.session_state.merged_df
+
+if hasattr(st.session_state, 'playlist_titles'):
+    playlist_titles = st.session_state.playlist_titles
+
+if hasattr(st.session_state, 'subscribe'):
+    subscribe = st.session_state.subscribe
+
+if hasattr(st.session_state, 'subscribe_week'):
+    subscribe_week = st.session_state.subscribe_week
 
 
 if hasattr(st.session_state, 'data'):
-    data = st.session_state.data
+    data = st.session_state.data   
+
     
     st.header(''' 
                     🖥️WATKAVERSE DASHBOARD
                 ''')
-
-
-    # 일부 전처리
-    merged_df, playlist_titles, subscribe, subscribe_week = data_diff(data)
-    total_diff, top3_videos,top3_music, top3_videos_week, top3_music_week, top3_videos_month, top3_music_month = hot_video(merged_df,playlist_titles, year, month)
 
     # -------------------------------------------------------- MAIN CONTENTS(재생목록, 구독자, hot_video) ------------------------------------------------------------- #
 
