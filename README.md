@@ -1,12 +1,17 @@
 # Youtube channel Waktaverse DASHBOARD
 
-#### issue
-* streamlit 캐시 제한 이슈로 대시보드가 터질 수 있습니다..🥲
+## 🖥️ 대시보드 보러가기 
+* [대시보드 웹](https://waktaverse-dashboard-test.streamlit.app/)
+* [pdf 요약본](https://github.com/KGochae/Waktaverse/tree/main/summary_pdf)
+
 
 # 🔧TOOL
 * Python : Data Preprocessing, EDA, NLP modeling
 * Streamlit : visualize, app
 * API : Google Cloud Platform(Youtube API V3)
+
+
+
 
 
 # 📁 디렉토리 
@@ -204,3 +209,5 @@
 
 ![image](https://github.com/KGochae/Waktaverse/assets/86241587/ac719107-3761-4724-9a09-dede51a737c1)
 
+#### issue
+* streamlit 캐시 제한 이슈로 대시보드가 터질 수 있습니다..🥲
