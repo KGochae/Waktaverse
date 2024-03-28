@@ -26,10 +26,10 @@ with open( "font.css" ) as css:
     st.markdown( f'<style>{css.read()}</style>' , unsafe_allow_html= True)
 pd.set_option('mode.chained_assignment',  None)
 
-
+# 현재 시간
 now = datetime.datetime.now()
-now_time = now.strftime('%Y-%m-%d') # 현재 시간을 문자열로 변환한 후 다시 datetime 객체로 변환
-today = pd.to_datetime(now_time, format='%Y-%m-%d') # 현재 시간을 datetime 객체로 변환 
+now_time = now.strftime('%Y-%m-%d') 
+today = pd.to_datetime(now_time, format='%Y-%m-%d') 
 
 week = now - datetime.timedelta(days=now.weekday())
 week_start = week.strftime('%m-%d')
@@ -496,9 +496,8 @@ if hasattr(st.session_state, 'data'):
                     st.markdown('''
                         ### 🔥뜨는 컨텐츠 TOP3 (예능/노래)
                         ''')
-                    # st.caption('몇주동안, 몇일동안 상위권 등수를 유지했는지 기록해보자')
                 with col2_1:
-                        sort_option_count = st.selectbox('__' , ['Today',f'주간 ({week_start})',f'월간 ({month}월)'], key='sort_option_hot')
+                        sort_option_count = st.selectbox('__' , ['Today',f'주간 ({week_start})'], key='sort_option_hot')
 
                         if sort_option_count == 'Today':
                             top3_data_enter = top3_videos
@@ -507,10 +506,6 @@ if hasattr(st.session_state, 'data'):
                         elif sort_option_count == f'주간 ({week_start})':
                             top3_data_enter = top3_videos_week 
                             top3_data_music = top3_music_week
-
-                        elif sort_option_count == f'월간 ({month}월)':
-                            top3_data_enter = top3_videos_month 
-                            top3_data_music = top3_music_month                            
 
             st.caption(f'''
                         * {sort_option_count} 조회수/좋아요 증가량 TOP3를 가져옵니다.                              
