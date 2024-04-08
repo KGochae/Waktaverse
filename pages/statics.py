@@ -68,7 +68,6 @@ if uploaded_file is not None:
     df = df[df['video_id'] !="#NAME?"]
     df['reaction'] = df['like_count'] + df['comment_count']
     df['react_per_view'] = round(df['view_count'] * 0.02,0)
-    df['diff_react_per_view'] = df['reaction'] - df['react_per_view']
 
 
     video_ids = df['video_id'].tolist()
@@ -409,14 +408,14 @@ if uploaded_file is not None:
             code ='''
                 # 범주형 변수 인코딩
                 df_encoded = pd.get_dummies(df, columns=['playlist_title'], prefix=['pli'])
-                variables_to_normalize = ['seconds', 'view_count', 'like_count', 'comment_count', 'benefit','reaction','diff_react_per_view']
+                variables_to_normalize = ['seconds', 'view_count', 'like_count', 'comment_count', 'benefit','reaction']
 
                 # 표준화 (Standardization)
                 scaler = StandardScaler()
                 df_encoded[variables_to_normalize] = scaler.fit_transform(df_encoded[variables_to_normalize])
 
                 # 로그화
-                var = ['seconds', 'view_count', 'like_count', 'comment_count', 'benefit','reaction','diff_react_per_view']
+                var = ['seconds', 'view_count', 'like_count', 'comment_count', 'benefit','reaction']
                 df_encoded[var] = np.log1p(df_encoded[var])
                 '''
 
@@ -424,14 +423,14 @@ if uploaded_file is not None:
         with col2:        
             # 범주형 변수 인코딩
             df_encoded = pd.get_dummies(df, columns=['playlist_title'], prefix=['pli'])        
-            variables_to_normalize = ['seconds', 'view_count', 'like_count', 'comment_count', 'benefit','reaction','diff_react_per_view']
+            variables_to_normalize = ['seconds', 'view_count', 'like_count', 'comment_count', 'benefit','reaction']
 
             # 표준화 (Standardization)
             scaler = StandardScaler()
             df_encoded[variables_to_normalize] = scaler.fit_transform(df_encoded[variables_to_normalize])
 
             # 연속형 변수에 로그 변환 적용
-            var = ['seconds', 'view_count', 'like_count', 'comment_count', 'benefit','reaction','diff_react_per_view']
+            var = ['seconds', 'view_count', 'like_count', 'comment_count', 'benefit','reaction']
 
             # 로그 전
             before_log = pd.DataFrame(df_encoded[var].skew())
@@ -454,7 +453,6 @@ if uploaded_file is not None:
         
         summary_benefit = ols('benefit ~ seconds + reaction  + pli_ISEGYE_IDOL_예능 + pli_WAKTAVERSE_예능 + pli_shorts + pli_vrchat + pli_노가리 + pli_똥겜 + pli_마크 + pli_합방기타컨텐츠', df_encoded).fit().summary()
         summary_reaction= ols('reaction ~ seconds + benefit  + pli_ISEGYE_IDOL_예능 + pli_WAKTAVERSE_MUSIC + pli_WAKTAVERSE_예능 + pli_shorts + pli_똥겜 + pli_노가리', df_encoded).fit().summary()
-        # summary_react_perview= ols('diff_react_per_view ~ seconds + benefit  + pli_WAKTAVERSE_MUSIC + pli_WAKTAVERSE_예능 + pli_shorts + pli_합방기타컨텐츠 + pli_vrchat + pli_마크', df_encoded).fit().summary()
 
 
         def reg(summary_df):
