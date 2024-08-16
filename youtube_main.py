@@ -171,7 +171,10 @@ if hasattr(st.session_state, 'data'):
     st.header(''' 
                     🖥️WATKAVERSE DASHBOARD
                 ''')
-
+    st.caption( '''
+                * 대시보드 데이터 범위 (23.07.01 ~ 23.12.31) 
+                '''
+              )
     # -------------------------------------------------------- MAIN CONTENTS(재생목록, 구독자, hot_video) ------------------------------------------------------------- #
 
     with st.container():  ### 📊 재생목록 조회수 증가량
@@ -1798,7 +1801,7 @@ if hasattr(st.session_state, 'data'):
         with st.form(key="WAKTAVERSE Chart submit"):
             col0,col1,col2,col3 = st.columns([1,1,3,0.5])
             with col0:
-                year_option = st.selectbox('Year',['2024','2023','2022','2021','ALL'], key='year')
+                year_option = st.selectbox('Year',['2023','2022','2021','ALL'], key='year')
             with col1:
                 month_option = st.selectbox('Month', ['12','11','10','9','8','7','6','5','4','3','2','1','ALL',], key='month')
             with col2:
