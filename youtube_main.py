@@ -37,7 +37,7 @@ month = str(now.strftime('%m'))
 year = str(now.strftime('%Y'))
 
 min_date = datetime.date(2023, 8, 2)
-max_date = datetime.date(2024, 1, 1) # now.year, now.month, now.day  
+max_date = datetime.date(now.year, now.month, now.day)
 befor_7 = datetime.date(2023, 12, 1) 
 
 
