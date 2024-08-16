@@ -36,7 +36,7 @@ week_start = week.strftime('%m-%d')
 month = str(now.strftime('%m'))
 year = str(now.strftime('%Y'))
 
-min_date = datetime.date(2023, 8, 2)
+min_date = datetime.date(2023, 8, 1)
 max_date = datetime.date(now.year, now.month, now.day)
 befor_7 = datetime.date(2023, 12, 1) 
 
@@ -172,7 +172,7 @@ if hasattr(st.session_state, 'data'):
                     🖥️WATKAVERSE DASHBOARD
                 ''')
     st.caption( '''
-                * 대시보드 데이터 범위 (23.07.01 ~ 23.12.31) 
+                * 대시보드 데이터 범위 (23.08.01 ~ 23.12.31) 
                 '''
               )
     # -------------------------------------------------------- MAIN CONTENTS(재생목록, 구독자, hot_video) ------------------------------------------------------------- #
