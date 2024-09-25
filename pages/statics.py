@@ -186,7 +186,7 @@ if uploaded_file is not None:
         col1,col2 = st.columns([1.5,1.5])
         with col1:
             # st.header('2020년 Point ✔️')
-            st.subheader('📊 컨텐츠별 조회수/이익/좋아요 비율')
+            st.subheader('📊 컨텐츠별 조회수/수익/반응 비율')
             with st.container():
                 col0, col1_1, col2_1, = st.columns([1,2,2])
 
