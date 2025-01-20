@@ -28,6 +28,10 @@
 │ └── tokenizer.pickle 
 ├── 📁pages
 │ └── statics.py ------- # 수익, 시청자반응 분석 페이지
+├── 📁summary_pdf 
+│ ├── 유튜브(왁타버스)지표 대시보드.pdf   # 프로젝트 요약
+│ └── 2023 WAKTAVERSE RECAP.pdf -------  # 왁타버스채널 Recap 포스팅
+
 ├── .gitignore
 ├── NLP.py ------------- # 시청자 댓글 감정분석에 관한 py 
 ├── README.md
